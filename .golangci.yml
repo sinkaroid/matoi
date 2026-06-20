@@ -1,0 +1,106 @@
+run:
+  timeout: 5m
+  issues-exit-code: 1
+  tests: true
+
+linters-settings:
+  govet:
+    enable-all: true
+    disable:
+      - fieldalignment # too annoying for general use
+  
+  revive:
+    rules:
+      - name: blank-imports
+      - name: context-as-argument
+      - name: context-keys-type
+      - name: dot-imports
+      - name: error-return
+      - name: error-strings
+      - name: error-naming
+      - name: exported
+      - name: if-return
+      - name: increment-decrement
+      - name: var-naming
+      - name: var-declaration
+      - name: package-comments
+      - name: range
+      - name: receiver-naming
+      - name: time-naming
+      - name: unexported-return
+      - name: unused-parameter
+      - name: unreachable-code
+      - name: redefines-builtin-id
+
+  gocritic:
+    enabled-tags:
+      - diagnostic
+      - style
+      - performance
+      - opinionated
+    disabled-checks:
+      - whyNoLint
+      - unnamedResult
+
+  errcheck:
+    check-type-assertions: true
+    check-blank: true
+
+  gofumpt:
+    extra-rules: true
+
+  goimports:
+    local-prefixes: matoi
+
+  gocognit:
+    min-complexity: 15
+
+  gocyclo:
+    min-complexity: 10
+
+  nestif:
+    min-complexity: 4
+
+  predeclared:
+    # Check shadowing of built-in identifiers (similar to no-global-assign / no-shadow)
+    q: true
+
+linters:
+  disable-all: true
+  enable:
+    # Core compiler / vet checks
+    - govet
+    - errcheck
+    - staticcheck
+    - unused
+    - ineffassign
+    - gosimple
+
+    # Style & Formatter (like Prettier + ESLint layout)
+    - gofumpt
+    - goimports
+    - misspell
+    - whitespace
+
+    # Strict Code Quality (matching typescript-eslint/strict)
+    - gocritic
+    - revive
+    - predeclared    # no shadowing of built-in functions
+    - unparam        # find unused function parameters
+    - nakedret       # no naked returns
+    - gocognit       # cognitive complexity check
+    - gocyclo        # cyclomatic complexity check
+    - nestif         # nested if statements check
+    - bodyclose      # defer body.Close() for HTTP (essential Go rule)
+    - noctx          # no context-less HTTP requests
+
+issues:
+  exclude-use-default: false
+  max-issues-per-linter: 0
+  max-same-issues: 0
+  exclude-dirs:
+    - dist
+    - node_modules
+    - tools
+    - dev_tools
+
