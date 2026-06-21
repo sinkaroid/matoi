@@ -4,7 +4,7 @@ package models
 // Post represents a normalized post across all booru providers.
 type Post struct {
 	ID              int      `json:"id"`
-	Directory       int      `json:"directory"`
+	Directory       string   `json:"directory"`
 	FileURL         string   `json:"file_url"`
 	PreviewURL      string   `json:"preview_url"`
 	SampleURL       string   `json:"sample_url"`

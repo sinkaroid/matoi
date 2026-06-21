@@ -5,10 +5,11 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"matoi/config"
 	"net/http"
 	"runtime"
 	"time"
+
+	"matoi/config"
 
 	"github.com/gofiber/fiber/v3"
 )

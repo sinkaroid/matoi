@@ -15,7 +15,7 @@ import (
 
 // AppVersion defines the current version of the application.
 // Can be overridden at build time using -ldflags="-X 'matoi/config.AppVersion=xxx'"
-var AppVersion = "2.0.1-alpha"
+var AppVersion = "3.0.0-alpha"
 
 // Config holds all the configuration variables for the application.
 type Config struct {
@@ -30,6 +30,8 @@ type Config struct {
 	DanbooruReturnLmt int
 	DanbooruAPIID     string
 	DanbooruAPIKey    string
+	GelbooruURL       string
+	GelbooruReturnLmt int
 	GelbooruAPIKey    string
 	GelbooruUserID    string
 	Rule34URL         string
@@ -75,6 +77,16 @@ func LoadConfig() *Config {
 		rule34Limit = "100"
 	}
 
+	gelbooruURL := os.Getenv("GELBOORU_URL")
+	if gelbooruURL == "" {
+		gelbooruURL = "https://gelbooru.com/index.php"
+	}
+
+	gelbooruLimit := 100
+	if val, err := strconv.Atoi(os.Getenv("GELBOORU_RETURN_LIMIT")); err == nil && val > 0 {
+		gelbooruLimit = val
+	}
+
 	userAgent := os.Getenv("USER_AGENT")
 	if userAgent == "" {
 		// Provide a safe default if not set
@@ -101,8 +113,10 @@ func LoadConfig() *Config {
 		DanbooruReturnLmt: danbooruLimit,
 		DanbooruAPIID:     os.Getenv("DANBOORU_API_ID"),
 		DanbooruAPIKey:    os.Getenv("DANBOORU_API_KEY"),
+		GelbooruURL:       gelbooruURL,
+		GelbooruReturnLmt: gelbooruLimit,
 		GelbooruAPIKey:    os.Getenv("GELBOORU_API_KEY"),
-		GelbooruUserID:    os.Getenv("GELBOORU_USER_ID"),
+		GelbooruUserID:    os.Getenv("GELBOORU_API_ID"),
 		Rule34URL:         rule34URL,
 		Rule34ReturnLimit: rule34Limit,
 		Rule34APIID:       os.Getenv("RULE34_API_ID"),

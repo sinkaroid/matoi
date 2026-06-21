@@ -1,6 +1,6 @@
 // Package main is the entry point for the Matoi API service.
 //
-//	@title			Matoi API Wrapper
+//	@title			sinkaroid/matoi
 //	@description	REST API wrapper/binding for imageboard APIs (Danbooru, Gelbooru, Rule34).
 //	@host			localhost:3000
 //	@BasePath		/
@@ -15,12 +15,13 @@ import (
 	"flag"
 	"fmt"
 	"log"
+	"os"
+
 	"matoi/cache"
 	"matoi/config"
 	"matoi/handlers"
 	"matoi/providers"
 	"matoi/router"
-	"os"
 
 	"github.com/gofiber/fiber/v3"
 )
@@ -36,7 +37,7 @@ func main() {
 	flag.Parse()
 
 	if *versionFlag {
-		fmt.Printf("Matoi API Wrapper v%s\n", config.AppVersion)
+		fmt.Printf("sinkaroid/matoi v%s\n", config.AppVersion)
 		os.Exit(0)
 	}
 
@@ -53,14 +54,16 @@ func main() {
 	// Instantiate Providers
 	rule34Provider := providers.NewRule34Provider(cfg)
 	danbooruProvider := providers.NewDanbooruProvider(cfg)
+	gelbooruProvider := providers.NewGelbooruProvider(cfg)
 
 	// Instantiate Handlers
 	rule34Handler := handlers.NewRule34Handler(rule34Provider)
 	danbooruHandler := handlers.NewDanbooruHandler(danbooruProvider)
+	gelbooruHandler := handlers.NewGelbooruHandler(gelbooruProvider)
 
 	// Initialize Go Fiber app with a custom global error handler
 	app := fiber.New(fiber.Config{
-		AppName: "Matoi API Wrapper",
+		AppName: "sinkaroid/matoi",
 		ErrorHandler: func(c fiber.Ctx, err error) error {
 			code := fiber.StatusInternalServerError
 			message := err.Error()
@@ -79,7 +82,7 @@ func main() {
 	})
 
 	// Setup application routing with dependency injection
-	router.SetupRoutes(app, cfg, rule34Handler, danbooruHandler)
+	router.SetupRoutes(app, cfg, rule34Handler, danbooruHandler, gelbooruHandler)
 
 	// Run Fiber server on configured port
 	log.Printf("Starting server on port %s", cfg.Port)

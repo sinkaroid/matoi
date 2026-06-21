@@ -180,6 +180,151 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/gelbooru/media": {
+            "get": {
+                "tags": [
+                    "gelbooru"
+                ],
+                "summary": "Proxy and stream Gelbooru media",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Encoded Gelbooru media URL",
+                        "name": "url",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Streams the media file"
+                    },
+                    "400": {
+                        "description": "Invalid parameters",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "502": {
+                        "description": "Failed to fetch media",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/gelbooru/posts": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "gelbooru"
+                ],
+                "summary": "Get posts from Gelbooru",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Space-separated tags",
+                        "name": "tags",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Max results (default 100, max 100)",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Page number (default 1)",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "boolean",
+                        "description": "Shuffle the results",
+                        "name": "shuffle",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.GelbooruResponse"
+                        }
+                    },
+                    "502": {
+                        "description": "Upstream fetch failed",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/gelbooru/query_completion": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Scrapes autocomplete tags from Gelbooru using wildcard matching. No cache enforcement.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "gelbooru"
+                ],
+                "summary": "Get tag completion from Gelbooru (Eiyuu logic)",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Tag query to autocomplete (e.g. jeanne)",
+                        "name": "tags",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.QueryCompletionResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/main.ErrorResponse"
+                        }
+                    },
+                    "502": {
+                        "description": "Bad Gateway",
+                        "schema": {
+                            "$ref": "#/definitions/main.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/api/rule34/media": {
             "get": {
                 "tags": [
@@ -375,6 +520,26 @@ const docTemplate = `{
                 }
             }
         },
+        "handlers.GelbooruResponse": {
+            "type": "object",
+            "properties": {
+                "count": {
+                    "type": "integer"
+                },
+                "posts": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.Post"
+                    }
+                },
+                "provider": {
+                    "type": "string"
+                },
+                "success": {
+                    "type": "boolean"
+                }
+            }
+        },
         "handlers.HomeResponse": {
             "type": "object",
             "properties": {
@@ -531,7 +696,7 @@ var SwaggerInfo = &swag.Spec{
 	Host:             "localhost:3000",
 	BasePath:         "/",
 	Schemes:          []string{},
-	Title:            "Matoi API Wrapper",
+	Title:            "sinkaroid/matoi",
 	Description:      "REST API wrapper/binding for imageboard APIs (Danbooru, Gelbooru, Rule34).",
 	InfoInstanceName: "swagger",
 	SwaggerTemplate:  docTemplate,

@@ -19,46 +19,46 @@ import (
 	"github.com/gofiber/fiber/v3"
 )
 
-// Rule34Handler exposes the Rule34 provider endpoints.
-type Rule34Handler struct {
-	provider *providers.Rule34Provider
+// GelbooruHandler exposes the Gelbooru provider endpoints.
+type GelbooruHandler struct {
+	provider *providers.GelbooruProvider
 }
 
-// NewRule34Handler creates a new Rule34 handler instance.
-func NewRule34Handler(p *providers.Rule34Provider) *Rule34Handler {
-	return &Rule34Handler{provider: p}
+// NewGelbooruHandler creates a new Gelbooru handler instance.
+func NewGelbooruHandler(p *providers.GelbooruProvider) *GelbooruHandler {
+	return &GelbooruHandler{provider: p}
 }
 
-// Rule34Response defines the JSON response schema for posts query.
-type Rule34Response struct {
+// GelbooruResponse defines the JSON response schema for posts query.
+type GelbooruResponse struct {
 	Success  bool          `json:"success"`
 	Provider string        `json:"provider"`
 	Count    int           `json:"count"`
 	Posts    []models.Post `json:"posts"`
 }
 
-// GetPosts returns posts from Rule34, checking Redis cache first.
+// GetPosts returns posts from Gelbooru, checking Redis cache first.
 //
-//	@Summary	Get posts from Rule34
-//	@Tags		rule34
+//	@Summary	Get posts from Gelbooru
+//	@Tags		gelbooru
 //	@Produce	json
 //	@Param		tags	query		string	false	"Space-separated tags"
-//	@Param		limit	query		int		false	"Max results (default 20, max 100)"
+//	@Param		limit	query		int		false	"Max results (default 100, max 100)"
 //	@Param		page	query		int		false	"Page number (default 1)"
-//	@Param		shuffle	query		bool	false	"Shuffle the results"
-//	@Success	200		{object}	Rule34Response
+//	@Success	200		{object}	GelbooruResponse
 //	@Failure	502		{object}	map[string]string	"Upstream fetch failed"
 //	@Security	ApiKeyAuth
-//	@Router		/api/rule34/posts [get]
+//	@Router		/api/gelbooru/posts [get]
 //
 //nolint:gocyclo,gocognit // Parsing request parameters makes this function complex
-func (h *Rule34Handler) GetPosts(c fiber.Ctx) error {
+func (h *GelbooruHandler) GetPosts(c fiber.Ctx) error {
 	tags := c.Query("tags", "")
 
-	limitStr := c.Query("limit", "20")
+	defaultLimit := strconv.Itoa(h.provider.Cfg.GelbooruReturnLmt)
+	limitStr := c.Query("limit", defaultLimit)
 	limit, err := strconv.Atoi(limitStr)
 	if err != nil || limit <= 0 {
-		limit = 20
+		limit = h.provider.Cfg.GelbooruReturnLmt
 	}
 	if limit > 100 {
 		limit = 100
@@ -70,8 +70,8 @@ func (h *Rule34Handler) GetPosts(c fiber.Ctx) error {
 		page = 1
 	}
 
-	// Cache key format: rule34:posts:tags_limit_page
-	cacheKey := fmt.Sprintf("rule34:posts:%s:%d:%d", tags, limit, page)
+	// Cache key format: gelbooru:posts:tags_limit_page
+	cacheKey := fmt.Sprintf("gelbooru:posts:%s:%d:%d", tags, limit, page)
 	ctx := c.Context()
 
 	var posts []models.Post
@@ -87,16 +87,16 @@ func (h *Rule34Handler) GetPosts(c fiber.Ctx) error {
 		}
 
 		if len(posts) == 0 {
-			return c.Status(http.StatusNotFound).JSON(Rule34Response{
+			return c.Status(http.StatusNotFound).JSON(GelbooruResponse{
 				Success:  false,
-				Provider: "rule34",
+				Provider: "gelbooru",
 				Count:    0,
 				Posts:    []models.Post{},
 			})
 		}
-		return c.Status(http.StatusOK).JSON(Rule34Response{
+		return c.Status(http.StatusOK).JSON(GelbooruResponse{
 			Success:  true,
-			Provider: "rule34",
+			Provider: "gelbooru",
 			Count:    len(posts),
 			Posts:    posts,
 		})
@@ -105,7 +105,7 @@ func (h *Rule34Handler) GetPosts(c fiber.Ctx) error {
 	// Fetch from upstream
 	posts, err = h.provider.FetchPosts(c.Context(), tags, limit, page)
 	if err != nil {
-		// Do not cache if not 200 OK (upstream request failed or returned non-200)
+		// Do not cache if not 200 OK
 		return fiber.NewError(http.StatusBadGateway, fmt.Sprintf("Upstream fetch failed: %v", err))
 	}
 
@@ -113,7 +113,6 @@ func (h *Rule34Handler) GetPosts(c fiber.Ctx) error {
 	if len(posts) > 0 {
 		ttl := h.provider.Cfg.RedisExpireCache
 		if setErr := cache.Set(ctx, cacheKey, posts, ttl); setErr != nil {
-			// Log the error but do not fail the request
 			_ = setErr
 		}
 	}
@@ -128,38 +127,38 @@ func (h *Rule34Handler) GetPosts(c fiber.Ctx) error {
 	}
 
 	if len(posts) == 0 {
-		return c.Status(http.StatusNotFound).JSON(Rule34Response{
+		return c.Status(http.StatusNotFound).JSON(GelbooruResponse{
 			Success:  false,
-			Provider: "rule34",
+			Provider: "gelbooru",
 			Count:    0,
 			Posts:    []models.Post{},
 		})
 	}
 
-	return c.Status(http.StatusOK).JSON(Rule34Response{
+	return c.Status(http.StatusOK).JSON(GelbooruResponse{
 		Success:  true,
-		Provider: "rule34",
+		Provider: "gelbooru",
 		Count:    len(posts),
 		Posts:    posts,
 	})
 }
 
-// ProxyMedia fetches and streams blocked Rule34 media.
+// ProxyMedia fetches and streams blocked Gelbooru media.
 //
-//	@Summary	Proxy and stream Rule34 media
-//	@Tags		rule34
-//	@Param		url	query	string	true	"Encoded Rule34 media URL"
+//	@Summary	Proxy and stream Gelbooru media
+//	@Tags		gelbooru
+//	@Param		url	query	string	true	"Encoded Gelbooru media URL"
 //	@Success	200	"Streams the media file"
 //	@Failure	400	{object}	map[string]string	"Invalid parameters"
 //	@Failure	502	{object}	map[string]string	"Failed to fetch media"
-//	@Router		/api/rule34/media [get]
-func (h *Rule34Handler) ProxyMedia(c fiber.Ctx) error {
+//	@Router		/api/gelbooru/media [get]
+func (h *GelbooruHandler) ProxyMedia(c fiber.Ctx) error {
 	mediaURL := c.Query("url", "")
 	if mediaURL == "" {
 		return fiber.NewError(http.StatusBadRequest, "Missing url parameter")
 	}
 
-	if !isValidMediaDomain(mediaURL) {
+	if !isGelbooruMediaDomain(mediaURL) {
 		return fiber.NewError(http.StatusBadRequest, "Invalid media source domain")
 	}
 
@@ -175,6 +174,7 @@ func (h *Rule34Handler) ProxyMedia(c fiber.Ctx) error {
 		return fiber.NewError(http.StatusInternalServerError, "Failed to create proxy request")
 	}
 	req.Header.Set("User-Agent", h.provider.Cfg.UserAgent)
+	req.Header.Set("Referer", "https://gelbooru.com/")
 
 	resp, err := client.Do(req)
 	if err != nil {
@@ -198,7 +198,7 @@ func (h *Rule34Handler) ProxyMedia(c fiber.Ctx) error {
 		c.Set("Content-Length", contentLength)
 	}
 
-	// Synchronously copy the response body to the client to avoid premature close of resp.Body
+	// Synchronously copy the response body to the client
 	if _, err := io.Copy(c.Response().BodyWriter(), resp.Body); err != nil {
 		return fiber.NewError(http.StatusBadGateway, "Failed to stream media content")
 	}
@@ -206,15 +206,15 @@ func (h *Rule34Handler) ProxyMedia(c fiber.Ctx) error {
 	return nil
 }
 
-func isValidMediaDomain(mediaURL string) bool {
+func isGelbooruMediaDomain(mediaURL string) bool {
 	parsedURL, err := url.Parse(mediaURL)
 	if err != nil {
 		return false
 	}
-	return strings.HasSuffix(parsedURL.Host, ".rule34.xxx") || parsedURL.Host == "rule34.xxx"
+	return strings.HasSuffix(parsedURL.Host, ".gelbooru.com") || parsedURL.Host == "gelbooru.com"
 }
 
-func (h *Rule34Handler) resolveMatoiURLs(c fiber.Ctx, posts []models.Post) {
+func (h *GelbooruHandler) resolveMatoiURLs(c fiber.Ctx, posts []models.Post) {
 	baseURL := h.provider.Cfg.ResolverURL
 	if baseURL == "" {
 		baseURL = c.BaseURL()
@@ -226,36 +226,30 @@ func (h *Rule34Handler) resolveMatoiURLs(c fiber.Ctx, posts []models.Post) {
 	for i := range posts {
 		p := &posts[i]
 		if p.FileURL != "" {
-			p.MatoiFileURL = fmt.Sprintf("%s/api/rule34/media?url=%s", baseURL, url.QueryEscape(p.FileURL))
+			p.MatoiFileURL = fmt.Sprintf("%s/api/gelbooru/media?url=%s", baseURL, url.QueryEscape(p.FileURL))
 		}
 		if p.PreviewURL != "" {
-			p.MatoiPreviewURL = fmt.Sprintf("%s/api/rule34/media?url=%s", baseURL, url.QueryEscape(p.PreviewURL))
+			p.MatoiPreviewURL = fmt.Sprintf("%s/api/gelbooru/media?url=%s", baseURL, url.QueryEscape(p.PreviewURL))
 		}
 		if p.SampleURL != "" {
-			p.MatoiSampleURL = fmt.Sprintf("%s/api/rule34/media?url=%s", baseURL, url.QueryEscape(p.SampleURL))
+			p.MatoiSampleURL = fmt.Sprintf("%s/api/gelbooru/media?url=%s", baseURL, url.QueryEscape(p.SampleURL))
 		}
 	}
 }
 
-// QueryCompletionResponse defines the JSON response schema for tag autocomplete.
-type QueryCompletionResponse struct {
-	Success bool     `json:"success"`
-	Tags    []string `json:"tags"`
-}
-
-// QueryCompletion handles the /api/rule34/query_completion endpoint.
+// QueryCompletion handles the /api/gelbooru/query_completion endpoint.
 //
-//	@Summary		Get tag completion from Rule34 (Eiyuu logic)
-//	@Description	Scrapes autocomplete tags from Rule34 using wildcard matching.
-//	@Tags			rule34
+//	@Summary		Get tag completion from Gelbooru (Eiyuu logic)
+//	@Description	Scrapes autocomplete tags from Gelbooru using wildcard matching. No cache enforcement.
+//	@Tags			gelbooru
 //	@Produce		json
 //	@Param			tags	query		string	true	"Tag query to autocomplete (e.g. jeanne)"
 //	@Success		200		{object}	QueryCompletionResponse
 //	@Failure		400		{object}	main.ErrorResponse
 //	@Failure		502		{object}	main.ErrorResponse
 //	@Security		ApiKeyAuth
-//	@Router			/api/rule34/query_completion [get]
-func (h *Rule34Handler) QueryCompletion(c fiber.Ctx) error {
+//	@Router			/api/gelbooru/query_completion [get]
+func (h *GelbooruHandler) QueryCompletion(c fiber.Ctx) error {
 	query := c.Query("tags", "")
 	if query == "" {
 		return fiber.NewError(http.StatusBadRequest, "tags query parameter is required")

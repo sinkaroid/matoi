@@ -5,13 +5,14 @@ import (
 	"crypto/tls"
 	"encoding/json"
 	"fmt"
-	"matoi/config"
-	"matoi/models"
 	"net/http"
 	"net/url"
 	"strconv"
 	"strings"
 	"time"
+
+	"matoi/config"
+	"matoi/models"
 )
 
 // DanbooruPost represents a raw post response from the Danbooru API.

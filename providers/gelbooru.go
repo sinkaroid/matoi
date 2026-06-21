@@ -19,8 +19,8 @@ import (
 	"github.com/PuerkitoBio/goquery"
 )
 
-// Rule34Post represents a raw post response from the Rule34 API.
-type Rule34Post struct {
+// GelbooruPost represents a raw post response from the Gelbooru API.
+type GelbooruPost struct {
 	ID         int    `json:"id"`
 	FileURL    string `json:"file_url"`
 	PreviewURL string `json:"preview_url"`
@@ -28,26 +28,29 @@ type Rule34Post struct {
 	Tags       string `json:"tags"`
 	Rating     string `json:"rating"`
 	Score      int    `json:"score"`
-	Directory  int    `json:"directory"`
-	Hash       string `json:"hash"`
+	Directory  string `json:"directory"`
 	Source     string `json:"source"`
 	Image      string `json:"image"`
-	Sample     bool   `json:"sample"`
 }
 
-// Rule34Provider manages fetching posts from Rule34.
-type Rule34Provider struct {
+// GelbooruResponse represents the top-level raw response from Gelbooru.
+type GelbooruResponse struct {
+	Attributes map[string]interface{} `json:"@attributes"`
+	Post       []GelbooruPost         `json:"post"`
+}
+
+// GelbooruProvider manages fetching posts from Gelbooru.
+type GelbooruProvider struct {
 	Cfg *config.Config
 }
 
-// NewRule34Provider creates a new Rule34 provider instance.
-func NewRule34Provider(cfg *config.Config) *Rule34Provider {
-	return &Rule34Provider{Cfg: cfg}
+// NewGelbooruProvider creates a new Gelbooru provider instance.
+func NewGelbooruProvider(cfg *config.Config) *GelbooruProvider {
+	return &GelbooruProvider{Cfg: cfg}
 }
 
-// FetchPosts fetches posts from the Rule34 API based on tags, limit, and page.
-func (p *Rule34Provider) FetchPosts(ctx context.Context, tags string, limit, page int) ([]models.Post, error) {
-	// Disable TLS verification to handle simulated time (2026) certificate validation failures
+// FetchPosts fetches posts from the Gelbooru API based on tags, limit, and page.
+func (p *GelbooruProvider) FetchPosts(ctx context.Context, tags string, limit, page int) ([]models.Post, error) {
 	tr := &http.Transport{
 		TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
 	}
@@ -66,6 +69,10 @@ func (p *Rule34Provider) FetchPosts(ctx context.Context, tags string, limit, pag
 		return nil, fmt.Errorf("failed to create request: %w", err)
 	}
 
+	if p.Cfg.UserAgent != "" {
+		req.Header.Set("User-Agent", p.Cfg.UserAgent)
+	}
+
 	resp, err := client.Do(req)
 	if err != nil {
 		return nil, fmt.Errorf("upstream request failed: %w", err)
@@ -80,18 +87,17 @@ func (p *Rule34Provider) FetchPosts(ctx context.Context, tags string, limit, pag
 		return nil, fmt.Errorf("unexpected status code from upstream: %d", resp.StatusCode)
 	}
 
-	var rawPosts []Rule34Post
-	if err := json.NewDecoder(resp.Body).Decode(&rawPosts); err != nil {
+	var rawResponse GelbooruResponse
+	if err := json.NewDecoder(resp.Body).Decode(&rawResponse); err != nil {
 		return nil, fmt.Errorf("failed to decode response: %w", err)
 	}
 
-	return mapPosts(rawPosts), nil
+	return p.mapPosts(rawResponse.Post), nil
 }
 
-// QueryCompletion fetches Eiyuu-style tag autocomplete suggestions from Rule34.
-func (p *Rule34Provider) QueryCompletion(ctx context.Context, query string) ([]string, error) {
-	// Eiyuu uses the web site, not the API, for autocomplete scraping.
-	urlStr := fmt.Sprintf("https://rule34.xxx/index.php?page=tags&s=list&tags=*%s*&sort=desc&order_by=index_count", query)
+// QueryCompletion fetches Eiyuu-style tag autocomplete suggestions from Gelbooru.
+func (p *GelbooruProvider) QueryCompletion(ctx context.Context, query string) ([]string, error) {
+	urlStr := fmt.Sprintf("https://gelbooru.com/index.php?page=tags&s=list&tags=*%s*&sort=desc&order_by=index_count", query)
 
 	tr := &http.Transport{
 		TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
@@ -129,10 +135,10 @@ func (p *Rule34Provider) QueryCompletion(ctx context.Context, query string) ([]s
 		return nil, fmt.Errorf("failed to parse HTML: %w", err)
 	}
 
-	return parseAutocompleteTags(doc), nil
+	return p.parseAutocompleteTags(doc), nil
 }
 
-func parseAutocompleteTags(doc *goquery.Document) []string {
+func (p *GelbooruProvider) parseAutocompleteTags(doc *goquery.Document) []string {
 	tags := []string{}
 	doc.Find("table.highlightable a").Each(func(_ int, s *goquery.Selection) {
 		href, exists := s.Attr("href")
@@ -152,10 +158,10 @@ func parseAutocompleteTags(doc *goquery.Document) []string {
 	return tags
 }
 
-func (p *Rule34Provider) buildURL(tags string, limit, page int) (string, error) {
-	u, err := url.Parse(p.Cfg.Rule34URL)
+func (p *GelbooruProvider) buildURL(tags string, limit, page int) (string, error) {
+	u, err := url.Parse(p.Cfg.GelbooruURL)
 	if err != nil {
-		return "", fmt.Errorf("failed to parse Rule34 URL: %w", err)
+		return "", fmt.Errorf("failed to parse Gelbooru URL: %w", err)
 	}
 
 	q := u.Query()
@@ -165,48 +171,49 @@ func (p *Rule34Provider) buildURL(tags string, limit, page int) (string, error) 
 	q.Set("json", "1")
 	q.Set("tags", tags)
 	q.Set("limit", strconv.Itoa(limit))
-	q.Set("pid", strconv.Itoa(page-1)) // 0-based page index
+	q.Set("pid", strconv.Itoa(page)) // Map Matoi page directly to Gelbooru pid
 
-	if p.Cfg.Rule34APIKey != "" {
-		q.Set("api_key", p.Cfg.Rule34APIKey)
+	if p.Cfg.GelbooruAPIKey != "" {
+		q.Set("api_key", p.Cfg.GelbooruAPIKey)
 	}
-	if p.Cfg.Rule34APIID != "" {
-		q.Set("user_id", p.Cfg.Rule34APIID)
+	if p.Cfg.GelbooruUserID != "" {
+		q.Set("user_id", p.Cfg.GelbooruUserID)
 	}
 
 	u.RawQuery = q.Encode()
 	return u.String(), nil
 }
 
-func mapRating(rawRating string) string {
+func (p *GelbooruProvider) mapRating(rawRating string) string {
 	switch strings.ToLower(rawRating) {
 	case "explicit", "e":
 		return "e"
 	case "questionable", "q":
 		return "q"
-	case "safe", "s":
+	case "safe", "s", "general":
 		return "s"
 	default:
 		return "s"
 	}
 }
 
-func mapPosts(rawPosts []Rule34Post) []models.Post {
+func (p *GelbooruProvider) mapPosts(rawPosts []GelbooruPost) []models.Post {
 	posts := make([]models.Post, len(rawPosts))
 	for i := range rawPosts {
 		rp := &rawPosts[i]
+
 		posts[i] = models.Post{
 			ID:         rp.ID,
-			Directory:  strconv.Itoa(rp.Directory),
+			Directory:  rp.Directory,
 			FileURL:    rp.FileURL,
 			PreviewURL: rp.PreviewURL,
 			SampleURL:  rp.SampleURL,
-			Rating:     mapRating(rp.Rating),
+			Rating:     p.mapRating(rp.Rating),
 			Score:      rp.Score,
 			Source:     rp.Source,
 			Image:      rp.Image,
 			Tags:       strings.Fields(rp.Tags),
-			Link:       fmt.Sprintf("https://rule34.xxx/index.php?page=post&s=view&id=%d", rp.ID),
+			Link:       fmt.Sprintf("https://gelbooru.com/index.php?page=post&s=view&id=%d", rp.ID),
 		}
 	}
 	return posts

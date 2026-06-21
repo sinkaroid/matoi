@@ -56,6 +56,8 @@ Stack: Fiber v3, Redis (Keyv-equivalent caching), Swagger (swag + swaggerui).
 - Always back claims with official docs or source code — no guessing
 - If unsure, say so explicitly rather than hallucinating behavior
 - All code must compile — do not leave placeholder stubs that break `go build`
+- **MUST RUN LINT AFTER MAKING CHANGES** — run `task lint` and fix any formatting/linting errors.
+
 
 ### Swagger / swag
 - Swag generates docs from **comments**, not types — always annotate handlers
@@ -129,7 +131,7 @@ Stack: Fiber v3, Redis (Keyv-equivalent caching), Swagger (swag + swaggerui).
 - Eiyuu performs web scraping via HTML DOM parsing to provide tag autocomplete bypassing API limitations.
 - In Go, use `github.com/PuerkitoBio/goquery` as the Cheerio equivalent to parse the HTML.
 - **Data Sanitization**: Ensure tags are fully sanitized (e.g., use `url.QueryUnescape` and `html.UnescapeString`) so HTML entities do not leak into the JSON response.
-- **Caching**: Autocomplete responses must be cached in Redis with a 24-hour TTL (`24 * time.Hour`), as booru tags rarely change rapidly.
+- **NO-CACHE**: Due to past issues with empty results being permanently cached, `QueryCompletion` MUST NOT BE CACHED. Never use Redis for autocomplete responses. Fetch live data on every query.
 
 ### Dev Tools & Testing
 - **NO `func main()` in `dev_tools/`**: Never create standalone `package main` scripts inside the `dev_tools/` directory. This breaks `go build` and `go test` at the workspace level.
@@ -148,7 +150,7 @@ Whenever an agent is tasked to add a new imageboard provider, they **MUST** full
 2. **IMPLEMENT QUERY_COMPLETION (Scraping & Autocomplete)**
    - Implement the `eiyuu` scraping logic in the provider.
    - Create the `/api/provider/query_completion` endpoint in the handler.
-   - Apply proper double-decoding sanitization and 24-hour Redis caching.
+   - Apply proper double-decoding sanitization. No caching is allowed for this endpoint.
 
 3. **IMPLEMENT IMG RESOLVE (Media Proxy & Matoi URLs)**
    - Implement a `/api/provider/media?url=` proxy endpoint to bypass hotlink protection.
