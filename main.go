@@ -2,7 +2,12 @@
 //
 //	@title			sinkaroid/matoi
 //	@description	REST API wrapper/binding for imageboard APIs (Danbooru, Gelbooru, Rule34).
-//	@host			localhost:3000
+//	@tag.name		graphql
+//	@tag.name		danbooru
+//	@tag.name		gelbooru
+//	@tag.name		rule34
+//	@tag.name		tbib
+//	@tag.name		system
 //	@BasePath		/
 //	@securityDefinitions.apikey ApiKeyAuth
 //	@in query
@@ -63,6 +68,11 @@ func main() {
 	gelbooruHandler := handlers.NewGelbooruHandler(gelbooruProvider)
 	tbibHandler := handlers.NewTbibHandler(tbibProvider)
 
+	var graphqlHandler *handlers.GraphQLHandler
+	if cfg.EnableGraphQL {
+		graphqlHandler = handlers.NewGraphQLHandler(cfg, rule34Provider)
+	}
+
 	// Initialize Go Fiber app with a custom global error handler
 	app := fiber.New(fiber.Config{
 		AppName: "sinkaroid/matoi",
@@ -84,7 +94,7 @@ func main() {
 	})
 
 	// Setup application routing with dependency injection
-	router.SetupRoutes(app, cfg, rule34Handler, danbooruHandler, gelbooruHandler, tbibHandler)
+	router.SetupRoutes(app, cfg, rule34Handler, danbooruHandler, gelbooruHandler, tbibHandler, graphqlHandler)
 
 	// Run Fiber server on configured port
 	log.Printf("Starting server on port %s", cfg.Port)

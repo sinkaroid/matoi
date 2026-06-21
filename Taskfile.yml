@@ -42,6 +42,11 @@ tasks:
     cmds:
       - qlty smells --all
 
+  docs:generate:
+    desc: "Generate static GH Pages index.html for Swagger UI"
+    cmds:
+      - go test -v ./dev_tools -run TestGenerateDocsUI
+
   test-danbooru:
     desc: Run the Danbooru tags prototype test script
     cmds:

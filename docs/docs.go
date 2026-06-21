@@ -319,6 +319,52 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/graphql": {
+            "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "graphql"
+                ],
+                "summary": "GraphQL Endpoint",
+                "parameters": [
+                    {
+                        "description": "GraphQL Query",
+                        "name": "query",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/handlers.GraphQLRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            }
+        },
         "/api/rule34/media": {
             "get": {
                 "tags": [
@@ -609,6 +655,25 @@ const docTemplate = `{
                 }
             }
         },
+        "/graphql": {
+            "get": {
+                "produces": [
+                    "text/html"
+                ],
+                "tags": [
+                    "graphql"
+                ],
+                "summary": "GraphiQL Playground",
+                "responses": {
+                    "200": {
+                        "description": "GraphiQL HTML page",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
         "/ping": {
             "get": {
                 "produces": [
@@ -676,6 +741,21 @@ const docTemplate = `{
                 },
                 "success": {
                     "type": "boolean"
+                }
+            }
+        },
+        "handlers.GraphQLRequest": {
+            "type": "object",
+            "properties": {
+                "operationName": {
+                    "type": "string"
+                },
+                "query": {
+                    "type": "string"
+                },
+                "variables": {
+                    "type": "object",
+                    "additionalProperties": true
                 }
             }
         },
@@ -846,13 +926,33 @@ const docTemplate = `{
             "name": "api_key",
             "in": "query"
         }
-    }
+    },
+    "tags": [
+        {
+            "name": "graphql"
+        },
+        {
+            "name": "danbooru"
+        },
+        {
+            "name": "gelbooru"
+        },
+        {
+            "name": "rule34"
+        },
+        {
+            "name": "tbib"
+        },
+        {
+            "name": "system"
+        }
+    ]
 }`
 
 // SwaggerInfo holds exported Swagger Info so clients can modify it
 var SwaggerInfo = &swag.Spec{
 	Version:          "",
-	Host:             "localhost:3000",
+	Host:             "",
 	BasePath:         "/",
 	Schemes:          []string{},
 	Title:            "sinkaroid/matoi",

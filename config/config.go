@@ -15,7 +15,7 @@ import (
 
 // AppVersion defines the current version of the application.
 // Can be overridden at build time using -ldflags="-X 'matoi/config.AppVersion=xxx'"
-var AppVersion = "4.0.0-alpha"
+var AppVersion = "4.1.0-alpha"
 
 // Config holds all the configuration variables for the application.
 type Config struct {
@@ -23,6 +23,7 @@ type Config struct {
 	ResolverURL       string
 	UserAgent         string
 	EnableLogs        bool
+	EnableGraphQL     bool
 	APIKey            string
 	RedisURL          string
 	RedisExpireCache  time.Duration
@@ -106,6 +107,7 @@ func LoadConfig() *Config {
 	}
 
 	enableLogs := strings.ToLower(strings.TrimSpace(os.Getenv("ENABLE_LOGS"))) == "true"
+	enableGraphQL := strings.ToLower(strings.TrimSpace(os.Getenv("GRAPHQL"))) == "true"
 	apiKey := os.Getenv("API_KEY")
 
 	danbooruLimit := 100
@@ -118,6 +120,7 @@ func LoadConfig() *Config {
 		ResolverURL:       os.Getenv("RESOLVER_URL"),
 		UserAgent:         userAgent,
 		EnableLogs:        enableLogs,
+		EnableGraphQL:     enableGraphQL,
 		APIKey:            apiKey,
 		RedisURL:          redisURL,
 		RedisExpireCache:  redisExpire,
