@@ -59,10 +59,12 @@ Stack: Fiber v3, Redis (Keyv-equivalent caching), Swagger (swag + swaggerui).
 - **MUST RUN LINT AFTER MAKING CHANGES** — run `task lint` and fix any formatting/linting errors.
 
 
-### Swagger / swag
+### Swagger & GitHub Pages Docs
 - Swag generates docs from **comments**, not types — always annotate handlers
 - Run `swag init` from project root after any handler change
 - Never manually edit `docs/` folder — it is always regenerated
+- **GitHub Pages Swagger UI**: For deploying docs to GitHub Pages, we use a custom static Swagger UI with a dynamic host setting form. This file (`docs/index.html`) MUST NOT be manually edited.
+- Instead, run `task docs:generate` to execute the Go test script in `dev_tools/docs_gen_test.go` which injects `swagger.json` directly into the HTML to bypass CORS issues.
 - Required annotations on every handler:
   ```go
   // @Summary
@@ -79,6 +81,12 @@ Stack: Fiber v3, Redis (Keyv-equivalent caching), Swagger (swag + swaggerui).
 - **Global Auth**: An `API_KEY` loaded from `.env` is required for protected routes via query `?api_key=` or header `Authorization: Bearer`.
 - **Protected Group**: `/api/*` endpoints are protected (except for the media proxy `/api/rule34/media` which remains public).
 - **CORS**: Fiber's CORS middleware is enabled globally (`app.Use(cors.New())`), allowing all origins to consume the API.
+
+### GraphQL API
+- Matoi supports a unified GraphQL endpoint at `POST /api/graphql` enabled via `GRAPHQL=true` in `.env`.
+- Implementation uses `github.com/graphql-go/graphql` with a code-first approach.
+- The GraphQL schema must maintain 100% feature parity with the REST API (including caching, rate limiting, and proxies).
+- An interactive GraphiQL playground is available at `GET /graphql` (unprotected).
 
 ### Config & Versioning
 - `AppVersion` is a `var` inside `config/config.go` to allow dynamic `ldflags` injection during compilation (`task build` / Docker).
@@ -176,6 +184,9 @@ task version
 
 # generate swagger docs
 swag init
+
+# generate gh-pages static swagger ui
+task docs:generate
 
 # tidy dependencies
 go mod tidy
