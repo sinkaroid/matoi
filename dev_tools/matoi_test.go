@@ -12,7 +12,7 @@ import (
 const baseURL = "http://localhost:3000"
 const apiKey = "matoi"
 
-var providers = []string{"rule34", "danbooru", "gelbooru", "tbib", "xbooru"}
+var providers = []string{"rule34", "danbooru", "gelbooru", "tbib", "xbooru", "hypnohub"}
 
 // MatoiPost minimal struct to extract matoi_file_url
 type MatoiPost struct {
