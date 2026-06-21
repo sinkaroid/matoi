@@ -6,14 +6,15 @@ import (
 	"fmt"
 	"io"
 	"math/rand/v2"
-	"matoi/cache"
-	"matoi/models"
-	"matoi/providers"
 	"net/http"
 	"net/url"
 	"strconv"
 	"strings"
 	"time"
+
+	"matoi/cache"
+	"matoi/models"
+	"matoi/providers"
 
 	"github.com/gofiber/fiber/v3"
 )
@@ -108,11 +109,13 @@ func (h *Rule34Handler) GetPosts(c fiber.Ctx) error {
 		return fiber.NewError(http.StatusBadGateway, fmt.Sprintf("Upstream fetch failed: %v", err))
 	}
 
-	// Cache the result with dynamic TTL from config
-	ttl := h.provider.Cfg.RedisExpireCache
-	if setErr := cache.Set(ctx, cacheKey, posts, ttl); setErr != nil {
-		// Log the error but do not fail the request
-		_ = setErr
+	// Only cache if we got results (do not cache empty 404s)
+	if len(posts) > 0 {
+		ttl := h.provider.Cfg.RedisExpireCache
+		if setErr := cache.Set(ctx, cacheKey, posts, ttl); setErr != nil {
+			// Log the error but do not fail the request
+			_ = setErr
+		}
 	}
 
 	c.Locals("source", "FETCH")

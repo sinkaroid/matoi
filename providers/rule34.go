@@ -7,13 +7,14 @@ import (
 	"encoding/json"
 	"fmt"
 	"html"
-	"matoi/config"
-	"matoi/models"
 	"net/http"
 	"net/url"
 	"strconv"
 	"strings"
 	"time"
+
+	"matoi/config"
+	"matoi/models"
 
 	"github.com/PuerkitoBio/goquery"
 )
@@ -196,7 +197,7 @@ func mapPosts(rawPosts []Rule34Post) []models.Post {
 		rp := &rawPosts[i]
 		posts[i] = models.Post{
 			ID:         rp.ID,
-			Directory:  rp.Directory,
+			Directory:  strconv.Itoa(rp.Directory),
 			FileURL:    rp.FileURL,
 			PreviewURL: rp.PreviewURL,
 			SampleURL:  rp.SampleURL,

@@ -6,14 +6,15 @@ import (
 	"io"
 	"log"
 	"math/rand/v2"
-	"matoi/cache"
-	"matoi/models"
-	"matoi/providers"
 	"net/http"
 	"net/url"
 	"strconv"
 	"strings"
 	"time"
+
+	"matoi/cache"
+	"matoi/models"
+	"matoi/providers"
 
 	"github.com/gofiber/fiber/v3"
 )
@@ -112,14 +113,16 @@ func (h *DanbooruHandler) GetPosts(c fiber.Ctx) error {
 		return fiber.NewError(http.StatusInternalServerError, err.Error())
 	}
 
-	// Cache the result asynchronously
-	go func() {
-		bgCtx, cancelBg := context.WithTimeout(context.Background(), 5*time.Second)
-		defer cancelBg()
-		if err := cache.Set(bgCtx, cacheKey, posts, h.Provider.Config.RedisExpireCache); err != nil {
-			log.Printf("Failed to cache danbooru posts: %v", err)
-		}
-	}()
+	// Cache the result asynchronously only if we have posts (do not cache empty 404s)
+	if len(posts) > 0 {
+		go func() {
+			bgCtx, cancelBg := context.WithTimeout(context.Background(), 5*time.Second)
+			defer cancelBg()
+			if err := cache.Set(bgCtx, cacheKey, posts, h.Provider.Config.RedisExpireCache); err != nil {
+				log.Printf("Failed to cache danbooru posts: %v", err)
+			}
+		}()
+	}
 
 	c.Locals("source", "FETCH")
 	h.resolveMatoiURLs(c, posts)
