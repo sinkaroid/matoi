@@ -2,9 +2,10 @@ package dev_tools
 
 import (
 	"context"
-	"matoi/config"
 	"testing"
 	"time"
+
+	"matoi/config"
 
 	"github.com/redis/go-redis/v9"
 )
