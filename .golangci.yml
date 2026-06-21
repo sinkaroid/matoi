@@ -48,8 +48,10 @@ linters-settings:
 
   gofumpt:
     extra-rules: true
+    module-path: matoi
 
-
+  goimports:
+    local-prefixes: matoi
 
   gocognit:
     min-complexity: 15
