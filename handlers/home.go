@@ -5,6 +5,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"matoi/config"
 	"net/http"
 	"runtime"
 	"time"
@@ -67,7 +68,7 @@ func HomeHandler(c fiber.Ctx) error {
 		RSS:      rssStr,
 		Heap:     heapStr,
 		Server:   serverLocation,
-		Version:  "1.0.0",
+		Version:  config.AppVersion,
 		Uptime:   uptimeStr,
 	})
 }

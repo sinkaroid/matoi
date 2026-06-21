@@ -1,0 +1,57 @@
+name: Release
+
+on:
+  push:
+    branches: [master]
+
+permissions:
+  contents: write
+  pull-requests: read
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION: true
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+          fetch-depth: 2
+
+      - name: Check if version changed
+        id: check
+        shell: bash
+        run: |
+          # Extract the AppVersion from config.go using grep
+          NEW_VERSION=$(grep -oP 'var AppVersion = "\K[^"]+' config/config.go || echo "0.0.0")
+          OLD_VERSION=$(git show HEAD~1:config/config.go | grep -oP 'var AppVersion = "\K[^"]+' || echo "0.0.0")
+          
+          if [ "$NEW_VERSION" != "$OLD_VERSION" ]; then
+            echo "changed=true" >> $GITHUB_OUTPUT
+            echo "version=$NEW_VERSION" >> $GITHUB_OUTPUT
+            echo "Version changed from $OLD_VERSION to $NEW_VERSION"
+          else
+            echo "changed=false" >> $GITHUB_OUTPUT
+            echo "Version remains $NEW_VERSION"
+          fi
+
+      - name: Create GitHub release
+        if: steps.check.outputs.changed == 'true'
+        uses: softprops/action-gh-release@c062e08bd532815e2082a85e87e3ef29c3e6d191 # v2.0.8
+        with:
+          tag_name: ${{ steps.check.outputs.version }}
+          name: ${{ steps.check.outputs.version }}
+          target_commitish: master
+          generate_release_notes: true
+
+      - name: Skip release log
+        if: steps.check.outputs.changed == 'false'
+        run: echo "No version change detected in config/config.go. Skipping release."
