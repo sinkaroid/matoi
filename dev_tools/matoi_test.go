@@ -9,10 +9,12 @@ import (
 	"testing"
 )
 
-const baseURL = "http://localhost:3000"
-const apiKey = "matoi"
+const (
+	baseURL = "http://localhost:3000"
+	apiKey  = "matoi"
+)
 
-var providers = []string{"rule34", "danbooru", "gelbooru", "tbib", "xbooru", "hypnohub", "safebooru"}
+var providers = []string{"rule34", "danbooru", "gelbooru", "tbib", "xbooru", "hypnohub", "safebooru", "yandere"}
 
 // MatoiPost minimal struct to extract matoi_file_url
 type MatoiPost struct {
@@ -63,11 +65,11 @@ func TestMatoiAllProviders(t *testing.T) {
 				}
 				resp.Body.Close()
 			}
-			
+
 			if activeTag == "" {
 				t.Fatalf("[%s] No posts found for tags yuri, 1girl, or bikini", p)
 			}
-			
+
 			t.Logf("[%s] Get Posts (Page 1) successful with tag '%s'. Fetched %d posts.", p, activeTag, len(postsData.Posts))
 
 			// Verify pagination by fetching Page 2
@@ -92,7 +94,7 @@ func TestMatoiAllProviders(t *testing.T) {
 			if mediaURL == "" {
 				t.Fatalf("[%s] matoi_file_url is empty in response", p)
 			}
-			
+
 			// Some Matoi proxy URLs might not require auth, but we send it just in case
 			mediaResp := doAuthRequest(t, "GET", mediaURL, nil)
 			defer mediaResp.Body.Close()
@@ -108,11 +110,11 @@ func TestMatoiAllProviders(t *testing.T) {
 			if qcResp.StatusCode != 200 {
 				t.Fatalf("[%s] Query completion test failed with status %d", p, qcResp.StatusCode)
 			}
-			
+
 			qcBody, _ := io.ReadAll(qcResp.Body)
 			var qcData map[string]interface{}
 			_ = json.Unmarshal(qcBody, &qcData)
-			
+
 			tags, _ := qcData["tags"].([]interface{})
 			displayCount := 3
 			if len(tags) < displayCount {
@@ -151,7 +153,7 @@ func TestMatoiGraphQLAllProviders(t *testing.T) {
 	payload := map[string]string{
 		"query": queryStr,
 	}
-	
+
 	jsonPayload, _ := json.Marshal(payload)
 	resp := doAuthRequest(t, "POST", baseURL+"/api/graphql", bytes.NewBuffer(jsonPayload))
 	defer resp.Body.Close()
@@ -161,12 +163,12 @@ func TestMatoiGraphQLAllProviders(t *testing.T) {
 	}
 
 	body, _ := io.ReadAll(resp.Body)
-	
+
 	var result map[string]interface{}
 	if err := json.Unmarshal(body, &result); err != nil {
 		t.Fatalf("Failed to parse GraphQL JSON response: %v", err)
 	}
-	
+
 	if errs, hasErrors := result["errors"]; hasErrors {
 		t.Fatalf("GraphQL returned errors: %v", errs)
 	}
@@ -182,7 +184,7 @@ func TestMatoiGraphQLAllProviders(t *testing.T) {
 			if !ok {
 				t.Fatalf("Missing data for provider: %s", p)
 			}
-			
+
 			// Verify completion exists
 			completions, _ := providerData["completion"].([]interface{})
 			if len(completions) == 0 {
@@ -198,7 +200,7 @@ func TestMatoiGraphQLAllProviders(t *testing.T) {
 			// Verify posts and media proxy
 			var posts []interface{}
 			var activeTag string
-			
+
 			if p1, ok := providerData["p1"].([]interface{}); ok && len(p1) > 0 {
 				posts = p1
 				activeTag = "yuri"
