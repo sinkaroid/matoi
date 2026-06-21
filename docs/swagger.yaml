@@ -1,5 +1,18 @@
 basePath: /
 definitions:
+  handlers.DanbooruResponse:
+    properties:
+      count:
+        type: integer
+      posts:
+        items:
+          $ref: '#/definitions/models.Post'
+        type: array
+      provider:
+        type: string
+      success:
+        type: boolean
+    type: object
   handlers.HomeResponse:
     properties:
       date:
@@ -67,6 +80,8 @@ definitions:
         type: integer
       image:
         type: string
+      link:
+        type: string
       matoi_file_url:
         type: string
       matoi_preview_url:
@@ -74,8 +89,6 @@ definitions:
       matoi_sample_url:
         type: string
       preview_url:
-        type: string
-      provider:
         type: string
       rating:
         description: s (safe), q (questionable), e (explicit)
@@ -109,6 +122,100 @@ paths:
       summary: System info and health check
       tags:
       - system
+  /api/danbooru/media:
+    get:
+      parameters:
+      - description: Encoded Danbooru media URL
+        in: query
+        name: url
+        required: true
+        type: string
+      responses:
+        "200":
+          description: Streams the media file
+        "400":
+          description: Invalid parameters
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "502":
+          description: Failed to fetch media
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Proxy and stream Danbooru media
+      tags:
+      - danbooru
+  /api/danbooru/posts:
+    get:
+      description: Fetches a list of posts from Danbooru based on provided tags.
+      parameters:
+      - description: Tags to search for
+        in: query
+        name: tags
+        type: string
+      - description: Max results (default 20, max 100)
+        in: query
+        name: limit
+        type: integer
+      - description: Page number (default 1)
+        in: query
+        name: page
+        type: integer
+      - description: Shuffle the results
+        in: query
+        name: shuffle
+        type: boolean
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.DanbooruResponse'
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - ApiKeyAuth: []
+      summary: Fetch posts from Danbooru
+      tags:
+      - danbooru
+  /api/danbooru/query_completion:
+    get:
+      description: Provides tag completion via scraping Danbooru's tags directory
+        (Eiyuu logic). Cached for 24 hours.
+      parameters:
+      - description: Tag prefix to search for
+        in: query
+        name: tags
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.QueryCompletionResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/main.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/main.ErrorResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Danbooru Tag Autocomplete
+      tags:
+      - danbooru
   /api/rule34/media:
     get:
       parameters:
@@ -150,6 +257,10 @@ paths:
         in: query
         name: page
         type: integer
+      - description: Shuffle the results
+        in: query
+        name: shuffle
+        type: boolean
       produces:
       - application/json
       responses:
