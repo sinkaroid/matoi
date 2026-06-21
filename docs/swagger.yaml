@@ -1,0 +1,172 @@
+basePath: /
+definitions:
+  handlers.HomeResponse:
+    properties:
+      date:
+        type: string
+      endpoint:
+        type: string
+      heap:
+        type: string
+      message:
+        type: string
+      rss:
+        type: string
+      server:
+        type: string
+      success:
+        type: boolean
+      uptime:
+        type: string
+      version:
+        type: string
+    type: object
+  handlers.PingResponse:
+    properties:
+      status:
+        type: string
+      success:
+        type: boolean
+    type: object
+  handlers.Rule34Response:
+    properties:
+      count:
+        type: integer
+      posts:
+        items:
+          $ref: '#/definitions/models.Post'
+        type: array
+      provider:
+        type: string
+      success:
+        type: boolean
+    type: object
+  models.Post:
+    properties:
+      directory:
+        type: integer
+      file_url:
+        type: string
+      id:
+        type: integer
+      image:
+        type: string
+      matoi_file_url:
+        type: string
+      matoi_preview_url:
+        type: string
+      matoi_sample_url:
+        type: string
+      preview_url:
+        type: string
+      provider:
+        type: string
+      rating:
+        description: s (safe), q (questionable), e (explicit)
+        type: string
+      sample_url:
+        type: string
+      score:
+        type: integer
+      source:
+        type: string
+      tags:
+        items:
+          type: string
+        type: array
+    type: object
+host: localhost:3000
+info:
+  contact: {}
+  description: REST API wrapper/binding for imageboard APIs (Danbooru, Gelbooru, Rule34).
+  title: Matoi API Wrapper
+  version: 1.0.2-alpha
+paths:
+  /:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.HomeResponse'
+      summary: System info and health check
+      tags:
+      - system
+  /api/rule34/media:
+    get:
+      parameters:
+      - description: Encoded Rule34 media URL
+        in: query
+        name: url
+        required: true
+        type: string
+      responses:
+        "200":
+          description: Streams the media file
+        "400":
+          description: Invalid parameters
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "502":
+          description: Failed to fetch media
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Proxy and stream Rule34 media
+      tags:
+      - rule34
+  /api/rule34/posts:
+    get:
+      parameters:
+      - description: Space-separated tags
+        in: query
+        name: tags
+        type: string
+      - description: Max results (default 20, max 100)
+        in: query
+        name: limit
+        type: integer
+      - description: Page number (default 1)
+        in: query
+        name: page
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.Rule34Response'
+        "502":
+          description: Upstream fetch failed
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Get posts from Rule34
+      tags:
+      - rule34
+  /ping:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Server is running
+          schema:
+            $ref: '#/definitions/handlers.PingResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Ping the server
+      tags:
+      - system
+swagger: "2.0"
