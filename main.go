@@ -7,6 +7,8 @@
 //	@tag.name		gelbooru
 //	@tag.name		rule34
 //	@tag.name		tbib
+//	@tag.name		xbooru
+//	@tag.name		hypnohub
 //	@tag.name		system
 //	@BasePath		/
 //	@securityDefinitions.apikey ApiKeyAuth

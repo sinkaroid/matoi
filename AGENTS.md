@@ -65,6 +65,7 @@ Stack: Fiber v3, Redis (Keyv-equivalent caching), Swagger (swag + swaggerui).
 - Never manually edit `docs/` folder — it is always regenerated
 - **GitHub Pages Swagger UI**: For deploying docs to GitHub Pages, we use a custom static Swagger UI with a dynamic host setting form. This file (`docs/index.html`) MUST NOT be manually edited.
 - Instead, run `task docs:generate` to execute the Go test script in `dev_tools/docs_gen_test.go` which injects `swagger.json` directly into the HTML to bypass CORS issues.
+- **Tag Ordering**: When adding new providers, you MUST add their corresponding `@tag.name <provider>` annotation in `main.go` BEFORE the `@tag.name system` annotation. The `system` tag must always remain at the very bottom so it appears last in the Swagger UI.
 - Required annotations on every handler:
   ```go
   // @Summary
