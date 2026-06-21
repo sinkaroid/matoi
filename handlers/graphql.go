@@ -28,10 +28,11 @@ type GraphQLHandler struct {
 	xbooruProvider    *providers.XbooruProvider
 	hypnohubProvider  *providers.HypnohubProvider
 	safebooruProvider *providers.SafebooruProvider
+	yandereProvider   *providers.YandereProvider
 }
 
 // NewGraphQLHandler initializes the GraphQL schema and returns the handler.
-func NewGraphQLHandler(cfg *config.Config, dan *providers.DanbooruProvider, gel *providers.GelbooruProvider, r34 *providers.Rule34Provider, tbib *providers.TbibProvider, xbooru *providers.XbooruProvider, hypnohub *providers.HypnohubProvider, safebooru *providers.SafebooruProvider) *GraphQLHandler {
+func NewGraphQLHandler(cfg *config.Config, dan *providers.DanbooruProvider, gel *providers.GelbooruProvider, r34 *providers.Rule34Provider, tbib *providers.TbibProvider, xbooru *providers.XbooruProvider, hypnohub *providers.HypnohubProvider, safebooru *providers.SafebooruProvider, yandere *providers.YandereProvider) *GraphQLHandler {
 	h := &GraphQLHandler{
 		cfg:               cfg,
 		danbooruProvider:  dan,
@@ -41,6 +42,7 @@ func NewGraphQLHandler(cfg *config.Config, dan *providers.DanbooruProvider, gel 
 		xbooruProvider:    xbooru,
 		hypnohubProvider:  hypnohub,
 		safebooruProvider: safebooru,
+		yandereProvider:   yandere,
 	}
 	h.initSchema()
 	return h
@@ -99,6 +101,7 @@ func (h *GraphQLHandler) initSchema() {
 	xbooruType := createProviderType("Xbooru", h.resolveXbooruPosts, h.resolveXbooruCompletion)
 	hypnohubType := createProviderType("Hypnohub", h.resolveHypnohubPosts, h.resolveHypnohubCompletion)
 	safebooruType := createProviderType("Safebooru", h.resolveSafebooruPosts, h.resolveSafebooruCompletion)
+	yandereType := createProviderType("Yandere", h.resolveYanderePosts, h.resolveYandereCompletion)
 
 	queryType := graphql.NewObject(graphql.ObjectConfig{
 		Name: "Query",
@@ -110,6 +113,7 @@ func (h *GraphQLHandler) initSchema() {
 			"xbooru":    &graphql.Field{Type: xbooruType, Resolve: func(_ graphql.ResolveParams) (interface{}, error) { return struct{}{}, nil }},
 			"hypnohub":  &graphql.Field{Type: hypnohubType, Resolve: func(_ graphql.ResolveParams) (interface{}, error) { return struct{}{}, nil }},
 			"safebooru": &graphql.Field{Type: safebooruType, Resolve: func(_ graphql.ResolveParams) (interface{}, error) { return struct{}{}, nil }},
+			"yandere":   &graphql.Field{Type: yandereType, Resolve: func(_ graphql.ResolveParams) (interface{}, error) { return struct{}{}, nil }},
 		},
 	})
 
@@ -463,4 +467,14 @@ func (h *GraphQLHandler) resolveSafebooruPosts(p graphql.ResolveParams) (interfa
 //nolint:gocritic // signature required
 func (h *GraphQLHandler) resolveSafebooruCompletion(p graphql.ResolveParams) (interface{}, error) {
 	return h.resolveGenericCompletion(p, h.safebooruProvider.QueryCompletion)
+}
+
+//nolint:gocritic // signature required
+func (h *GraphQLHandler) resolveYanderePosts(p graphql.ResolveParams) (interface{}, error) {
+	return h.resolveGenericPosts(p, "yandere", h.yandereProvider.FetchPosts)
+}
+
+//nolint:gocritic // signature required
+func (h *GraphQLHandler) resolveYandereCompletion(p graphql.ResolveParams) (interface{}, error) {
+	return h.resolveGenericCompletion(p, h.yandereProvider.QueryCompletion)
 }
