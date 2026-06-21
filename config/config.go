@@ -41,11 +41,13 @@ type Config struct {
 	Rule34APIKey      string
 	TbibURL           string
 	TbibReturnLimit   string
+	XbooruURL         string
+	XbooruReturnLimit string
 }
 
 // LoadConfig loads the environment variables from .env or standard env variables, falling back to defaults if not set.
 //
-//nolint:gocyclo // Config loading naturally has many assignments
+//nolint:gocyclo,gocognit // Config loading naturally has many assignments
 func LoadConfig() *Config {
 	// Loading .env is optional as environment variables can be set directly in production.
 	if err := godotenv.Load(); err != nil {
@@ -115,6 +117,16 @@ func LoadConfig() *Config {
 		danbooruLimit = val
 	}
 
+	xbooruURL := os.Getenv("XBOORU_URL")
+	if xbooruURL == "" {
+		xbooruURL = "https://xbooru.com/index.php"
+	}
+
+	xbooruLimit := os.Getenv("XBOORU_RETURN_LIMIT")
+	if xbooruLimit == "" {
+		xbooruLimit = "100"
+	}
+
 	return &Config{
 		Port:              port,
 		ResolverURL:       os.Getenv("RESOLVER_URL"),
@@ -138,5 +150,7 @@ func LoadConfig() *Config {
 		Rule34APIKey:      os.Getenv("RULE34_API_KEY"),
 		TbibURL:           tbibURL,
 		TbibReturnLimit:   tbibLimit,
+		XbooruURL:         xbooruURL,
+		XbooruReturnLimit: xbooruLimit,
 	}
 }
