@@ -13,7 +13,7 @@ import (
 )
 
 // SetupRoutes registers all routes for the application, accepting handlers via dependency injection.
-func SetupRoutes(app *fiber.App, cfg *config.Config, rule34Handler *handlers.Rule34Handler, danbooruHandler *handlers.DanbooruHandler, gelbooruHandler *handlers.GelbooruHandler, tbibHandler *handlers.TbibHandler, graphqlHandler *handlers.GraphQLHandler) {
+func SetupRoutes(app *fiber.App, cfg *config.Config, rule34Handler *handlers.Rule34Handler, danbooruHandler *handlers.DanbooruHandler, gelbooruHandler *handlers.GelbooruHandler, tbibHandler *handlers.TbibHandler, xbooruHandler *handlers.XbooruHandler, graphqlHandler *handlers.GraphQLHandler) {
 	// Enable CORS globally
 	app.Use(cors.New())
 
@@ -46,6 +46,7 @@ func SetupRoutes(app *fiber.App, cfg *config.Config, rule34Handler *handlers.Rul
 	app.Get("/api/danbooru/media", danbooruHandler.ProxyMedia)
 	app.Get("/api/gelbooru/media", gelbooruHandler.ProxyMedia)
 	app.Get("/api/tbib/media", tbibHandler.ProxyMedia)
+	app.Get("/api/xbooru/media", xbooruHandler.ProxyMedia)
 
 	// Protected API Group
 	api := app.Group("/api", authMiddleware)
@@ -65,6 +66,10 @@ func SetupRoutes(app *fiber.App, cfg *config.Config, rule34Handler *handlers.Rul
 	// Register TBIB protected endpoints
 	api.Get("/tbib/posts", tbibHandler.GetPosts)
 	api.Get("/tbib/query_completion", tbibHandler.QueryCompletion)
+
+	// Register Xbooru protected endpoints
+	api.Get("/xbooru/posts", xbooruHandler.GetPosts)
+	api.Get("/xbooru/query_completion", xbooruHandler.QueryCompletion)
 
 	// Register GraphQL endpoints
 	if cfg.EnableGraphQL && graphqlHandler != nil {
