@@ -18,7 +18,6 @@ tmp/
 .agent/
 
 # IDEs and Editors
-.vscode/
 .idea/
 *.suo
 *.ntvs*
