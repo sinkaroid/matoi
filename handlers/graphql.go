@@ -25,16 +25,18 @@ type GraphQLHandler struct {
 	gelbooruProvider *providers.GelbooruProvider
 	rule34Provider   *providers.Rule34Provider
 	tbibProvider     *providers.TbibProvider
+	xbooruProvider   *providers.XbooruProvider
 }
 
 // NewGraphQLHandler initializes the GraphQL schema and returns the handler.
-func NewGraphQLHandler(cfg *config.Config, dan *providers.DanbooruProvider, gel *providers.GelbooruProvider, r34 *providers.Rule34Provider, tbib *providers.TbibProvider) *GraphQLHandler {
+func NewGraphQLHandler(cfg *config.Config, dan *providers.DanbooruProvider, gel *providers.GelbooruProvider, r34 *providers.Rule34Provider, tbib *providers.TbibProvider, xbooru *providers.XbooruProvider) *GraphQLHandler {
 	h := &GraphQLHandler{
 		cfg:              cfg,
 		danbooruProvider: dan,
 		gelbooruProvider: gel,
 		rule34Provider:   r34,
 		tbibProvider:     tbib,
+		xbooruProvider:   xbooru,
 	}
 	h.initSchema()
 	return h
@@ -90,6 +92,7 @@ func (h *GraphQLHandler) initSchema() {
 	gelbooruType := createProviderType("Gelbooru", h.resolveGelbooruPosts, h.resolveGelbooruCompletion)
 	rule34Type := createProviderType("Rule34", h.resolveRule34Posts, h.resolveRule34Completion)
 	tbibType := createProviderType("Tbib", h.resolveTbibPosts, h.resolveTbibCompletion)
+	xbooruType := createProviderType("Xbooru", h.resolveXbooruPosts, h.resolveXbooruCompletion)
 
 	queryType := graphql.NewObject(graphql.ObjectConfig{
 		Name: "Query",
@@ -98,6 +101,7 @@ func (h *GraphQLHandler) initSchema() {
 			"gelbooru": &graphql.Field{Type: gelbooruType, Resolve: func(_ graphql.ResolveParams) (interface{}, error) { return struct{}{}, nil }},
 			"rule34":   &graphql.Field{Type: rule34Type, Resolve: func(_ graphql.ResolveParams) (interface{}, error) { return struct{}{}, nil }},
 			"tbib":     &graphql.Field{Type: tbibType, Resolve: func(_ graphql.ResolveParams) (interface{}, error) { return struct{}{}, nil }},
+			"xbooru":   &graphql.Field{Type: xbooruType, Resolve: func(_ graphql.ResolveParams) (interface{}, error) { return struct{}{}, nil }},
 		},
 	})
 
@@ -236,6 +240,16 @@ func (h *GraphQLHandler) resolveTbibPosts(p graphql.ResolveParams) (interface{},
 //nolint:gocritic // signature required
 func (h *GraphQLHandler) resolveTbibCompletion(p graphql.ResolveParams) (interface{}, error) {
 	return h.resolveGenericCompletion(p, h.tbibProvider.QueryCompletion)
+}
+
+//nolint:gocritic // signature required
+func (h *GraphQLHandler) resolveXbooruPosts(p graphql.ResolveParams) (interface{}, error) {
+	return h.resolveGenericPosts(p, "xbooru", h.xbooruProvider.FetchPosts)
+}
+
+//nolint:gocritic // signature required
+func (h *GraphQLHandler) resolveXbooruCompletion(p graphql.ResolveParams) (interface{}, error) {
+	return h.resolveGenericCompletion(p, h.xbooruProvider.QueryCompletion)
 }
 
 func (h *GraphQLHandler) resolveMatoiURLs(baseURL, providerName string, posts []models.Post) {
