@@ -13,6 +13,19 @@ definitions:
       success:
         type: boolean
     type: object
+  handlers.GelbooruResponse:
+    properties:
+      count:
+        type: integer
+      posts:
+        items:
+          $ref: '#/definitions/models.Post'
+        type: array
+      provider:
+        type: string
+      success:
+        type: boolean
+    type: object
   handlers.HomeResponse:
     properties:
       date:
@@ -108,7 +121,7 @@ host: localhost:3000
 info:
   contact: {}
   description: REST API wrapper/binding for imageboard APIs (Danbooru, Gelbooru, Rule34).
-  title: Matoi API Wrapper
+  title: sinkaroid/matoi
 paths:
   /:
     get:
@@ -216,6 +229,99 @@ paths:
       summary: Danbooru Tag Autocomplete
       tags:
       - danbooru
+  /api/gelbooru/media:
+    get:
+      parameters:
+      - description: Encoded Gelbooru media URL
+        in: query
+        name: url
+        required: true
+        type: string
+      responses:
+        "200":
+          description: Streams the media file
+        "400":
+          description: Invalid parameters
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "502":
+          description: Failed to fetch media
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Proxy and stream Gelbooru media
+      tags:
+      - gelbooru
+  /api/gelbooru/posts:
+    get:
+      parameters:
+      - description: Space-separated tags
+        in: query
+        name: tags
+        type: string
+      - description: Max results (default 100, max 100)
+        in: query
+        name: limit
+        type: integer
+      - description: Page number (default 1)
+        in: query
+        name: page
+        type: integer
+      - description: Shuffle the results
+        in: query
+        name: shuffle
+        type: boolean
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.GelbooruResponse'
+        "502":
+          description: Upstream fetch failed
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - ApiKeyAuth: []
+      summary: Get posts from Gelbooru
+      tags:
+      - gelbooru
+  /api/gelbooru/query_completion:
+    get:
+      description: Scrapes autocomplete tags from Gelbooru using wildcard matching.
+        No cache enforcement.
+      parameters:
+      - description: Tag query to autocomplete (e.g. jeanne)
+        in: query
+        name: tags
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.QueryCompletionResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/main.ErrorResponse'
+        "502":
+          description: Bad Gateway
+          schema:
+            $ref: '#/definitions/main.ErrorResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Get tag completion from Gelbooru (Eiyuu logic)
+      tags:
+      - gelbooru
   /api/rule34/media:
     get:
       parameters:
