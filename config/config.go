@@ -2,14 +2,20 @@
 package config
 
 import (
+	"fmt"
 	"log"
 	"os"
+	"runtime"
 	"strconv"
 	"strings"
 	"time"
 
 	"github.com/joho/godotenv"
 )
+
+// AppVersion defines the current version of the application.
+// Can be overridden at build time using -ldflags="-X 'matoi/config.AppVersion=xxx'"
+var AppVersion = "1.0.2-alpha"
 
 // Config holds all the configuration variables for the application.
 type Config struct {
@@ -67,7 +73,7 @@ func LoadConfig() *Config {
 	userAgent := os.Getenv("USER_AGENT")
 	if userAgent == "" {
 		// Provide a safe default if not set
-		userAgent = "matoi/1.0.2-alpha Go/1.26.4"
+		userAgent = fmt.Sprintf("matoi/%s %s", AppVersion, runtime.Version())
 	}
 
 	enableLogs := strings.ToLower(strings.TrimSpace(os.Getenv("ENABLE_LOGS"))) == "true"
