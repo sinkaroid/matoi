@@ -6,6 +6,7 @@ require (
 	github.com/PuerkitoBio/goquery v1.12.0
 	github.com/gofiber/contrib/v3/swaggerui v1.0.8
 	github.com/gofiber/fiber/v3 v3.3.0
+	github.com/graphql-go/graphql v0.8.1
 	github.com/joho/godotenv v1.5.1
 	github.com/redis/go-redis/v9 v9.20.1
 	github.com/swaggo/swag v1.16.6

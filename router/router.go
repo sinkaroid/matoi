@@ -13,7 +13,7 @@ import (
 )
 
 // SetupRoutes registers all routes for the application, accepting handlers via dependency injection.
-func SetupRoutes(app *fiber.App, cfg *config.Config, rule34Handler *handlers.Rule34Handler, danbooruHandler *handlers.DanbooruHandler, gelbooruHandler *handlers.GelbooruHandler, tbibHandler *handlers.TbibHandler) {
+func SetupRoutes(app *fiber.App, cfg *config.Config, rule34Handler *handlers.Rule34Handler, danbooruHandler *handlers.DanbooruHandler, gelbooruHandler *handlers.GelbooruHandler, tbibHandler *handlers.TbibHandler, graphqlHandler *handlers.GraphQLHandler) {
 	// Enable CORS globally
 	app.Use(cors.New())
 
@@ -65,4 +65,10 @@ func SetupRoutes(app *fiber.App, cfg *config.Config, rule34Handler *handlers.Rul
 	// Register TBIB protected endpoints
 	api.Get("/tbib/posts", tbibHandler.GetPosts)
 	api.Get("/tbib/query_completion", tbibHandler.QueryCompletion)
+
+	// Register GraphQL endpoints
+	if cfg.EnableGraphQL && graphqlHandler != nil {
+		app.Get("/graphql", graphqlHandler.Playground) // Unprotected UI
+		api.Post("/graphql", graphqlHandler.Handle)    // Protected API
+	}
 }
