@@ -4,6 +4,10 @@
 //	@description	REST API wrapper/binding for imageboard APIs (Danbooru, Gelbooru, Rule34).
 //	@host			localhost:3000
 //	@BasePath		/
+//	@securityDefinitions.apikey ApiKeyAuth
+//	@in query
+//	@name api_key
+//	@description Provide the API key via the `api_key` query parameter or `Authorization: Bearer <key>` header.
 package main
 
 import (

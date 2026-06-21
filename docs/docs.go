@@ -76,6 +76,11 @@ const docTemplate = `{
         },
         "/api/rule34/posts": {
             "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
                 "produces": [
                     "application/json"
                 ],
@@ -266,12 +271,20 @@ const docTemplate = `{
                 }
             }
         }
+    },
+    "securityDefinitions": {
+        "ApiKeyAuth": {
+            "description": "Provide the API key via the ` + "`" + `api_key` + "`" + ` query parameter or ` + "`" + `Authorization: Bearer \u003ckey\u003e` + "`" + ` header.",
+            "type": "apiKey",
+            "name": "api_key",
+            "in": "query"
+        }
     }
 }`
 
 // SwaggerInfo holds exported Swagger Info so clients can modify it
 var SwaggerInfo = &swag.Spec{
-	Version:          "1.0.2-alpha",
+	Version:          "",
 	Host:             "localhost:3000",
 	BasePath:         "/",
 	Schemes:          []string{},

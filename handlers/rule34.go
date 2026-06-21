@@ -45,6 +45,7 @@ type Rule34Response struct {
 //	@Param		page	query		int		false	"Page number (default 1)"
 //	@Success	200		{object}	Rule34Response
 //	@Failure	502		{object}	map[string]string	"Upstream fetch failed"
+//	@Security	ApiKeyAuth
 //	@Router		/api/rule34/posts [get]
 func (h *Rule34Handler) GetPosts(c fiber.Ctx) error {
 	tags := c.Query("tags", "")

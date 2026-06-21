@@ -3,8 +3,7 @@
     "info": {
         "description": "REST API wrapper/binding for imageboard APIs (Danbooru, Gelbooru, Rule34).",
         "title": "Matoi API Wrapper",
-        "contact": {},
-        "version": "1.0.2-alpha"
+        "contact": {}
     },
     "host": "localhost:3000",
     "basePath": "/",
@@ -70,6 +69,11 @@
         },
         "/api/rule34/posts": {
             "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
                 "produces": [
                     "application/json"
                 ],
@@ -259,6 +263,14 @@
                     }
                 }
             }
+        }
+    },
+    "securityDefinitions": {
+        "ApiKeyAuth": {
+            "description": "Provide the API key via the `api_key` query parameter or `Authorization: Bearer \u003ckey\u003e` header.",
+            "type": "apiKey",
+            "name": "api_key",
+            "in": "query"
         }
     }
 }
