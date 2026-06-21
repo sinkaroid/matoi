@@ -16,6 +16,7 @@ var providers = []string{"rule34", "danbooru", "gelbooru", "tbib", "xbooru"}
 
 // MatoiPost minimal struct to extract matoi_file_url
 type MatoiPost struct {
+	ID           int    `json:"id"`
 	MatoiFileURL string `json:"matoi_file_url"`
 }
 
@@ -59,7 +60,24 @@ func TestMatoiAllProviders(t *testing.T) {
 				t.Fatalf("[%s] Failed to parse JSON: %v", p, err)
 			}
 			
-			t.Logf("[%s] Get Posts successful. Fetched %d posts.", p, len(postsData.Posts))
+			t.Logf("[%s] Get Posts (Page 1) successful. Fetched %d posts.", p, len(postsData.Posts))
+
+			// Verify pagination by fetching Page 2
+			postURL2 := fmt.Sprintf("%s/api/%s/posts?tags=yuri&page=2&limit=3", baseURL, p)
+			resp2 := doAuthRequest(t, "GET", postURL2, nil)
+			if resp2.StatusCode == 200 {
+				body2, _ := io.ReadAll(resp2.Body)
+				resp2.Body.Close()
+				var postsData2 PostsResponse
+				if err := json.Unmarshal(body2, &postsData2); err == nil && len(postsData2.Posts) > 0 && len(postsData.Posts) > 0 {
+					idPage1 := postsData.Posts[0].ID
+					idPage2 := postsData2.Posts[0].ID
+					t.Logf("[%s] Pagination Verified -> Page 1 First Post ID: %v | Page 2 First Post ID: %v", p, idPage1, idPage2)
+					if idPage1 == idPage2 {
+						t.Fatalf("[%s] Pagination failed! Page 1 and Page 2 returned the exact same Post ID: %v", p, idPage1)
+					}
+				}
+			}
 
 			if len(postsData.Posts) == 0 {
 				t.Logf("[%s] Warning: No posts found for tags=yuri", p)
