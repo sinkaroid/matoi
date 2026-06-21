@@ -94,9 +94,30 @@ Stack: Fiber v3, Redis (Keyv-equivalent caching), Swagger (swag + swaggerui).
 - Always set a timeout on the HTTP client (default: 10s)
 - Return structured errors — do not panic on upstream failure
 
-### Models
-- `models/Post` is the normalized shared struct — map each provider response to this
-- Provider-specific raw structs go in `providers/` — not in `models/`
+### Models & JSON Consistency (CRITICAL)
+- **Consistency is the entire purpose of this project.** You MUST ensure that the JSON output format is 100% normalized across ALL providers.
+- `models/Post` is the normalized shared struct — map each provider response strictly to this without changing keys.
+- **Provider Wrapper**: Every provider endpoint MUST wrap its post array in the exact same structure:
+  ```json
+  {
+    "success": true,
+    "provider": "provider_name",
+    "count": 100,
+    "posts": [ ... models.Post array ... ]
+  }
+  ```
+- **Query Completion Wrapper**: Every autocomplete endpoint MUST return the exact same structure:
+  ```json
+  {
+    "success": true,
+    "tags": [ "tag1", "tag2" ]
+  }
+  ```
+- Provider-specific raw structs go in `providers/` — not in `models/`. Do not bleed raw keys to the client.
+
+### Empty Results & Null Prevention (CRITICAL)
+- **NO `null` ARRAYS**: Always initialize slices as `tags := []string{}` or `posts := []models.Post{}`. Never use `var tags []string` because it marshals to `null` instead of `[]` in JSON.
+- **404 ON EMPTY**: If a query yields 0 results (`len(posts) == 0` or `len(tags) == 0`), you MUST return `HTTP 404 Not Found` with `"success": false` and the empty array. NEVER return `HTTP 200 OK` for an empty result.
 
 ### Error Handling
 - Use Fiber's error handler — return `fiber.NewError(status, message)`
@@ -109,6 +130,30 @@ Stack: Fiber v3, Redis (Keyv-equivalent caching), Swagger (swag + swaggerui).
 - In Go, use `github.com/PuerkitoBio/goquery` as the Cheerio equivalent to parse the HTML.
 - **Data Sanitization**: Ensure tags are fully sanitized (e.g., use `url.QueryUnescape` and `html.UnescapeString`) so HTML entities do not leak into the JSON response.
 - **Caching**: Autocomplete responses must be cached in Redis with a 24-hour TTL (`24 * time.Hour`), as booru tags rarely change rapidly.
+
+### Dev Tools & Testing
+- **NO `func main()` in `dev_tools/`**: Never create standalone `package main` scripts inside the `dev_tools/` directory. This breaks `go build` and `go test` at the workspace level.
+- Always use standard Go test functions (e.g., `func TestSomething(t *testing.T)`) inside `*_test.go` files for prototypes and utility scripts.
+- Run them via `go test -v ./dev_tools -run TestSomething`.
+- **Taskfile Integration**: You MUST register a new task in `Taskfile.yml` for any test or utility script created in `dev_tools/` so it can be easily executed via the `task` CLI.
+
+## Mandatory Provider Implementation Checklist (The 3 Pillars)
+
+Whenever an agent is tasked to add a new imageboard provider, they **MUST** fully implement these three phases before considering the task complete:
+
+1. **IMPLEMENT PROVIDERS (Core Fetch & Normalize)**
+   - Create the upstream fetch logic in `providers/` handling the raw struct mapping.
+   - Strictly normalize the response into `models.Post` using the exact JSON wrapper (`Success`, `Provider`, `Count`, `Posts`).
+
+2. **IMPLEMENT QUERY_COMPLETION (Scraping & Autocomplete)**
+   - Implement the `eiyuu` scraping logic in the provider.
+   - Create the `/api/provider/query_completion` endpoint in the handler.
+   - Apply proper double-decoding sanitization and 24-hour Redis caching.
+
+3. **IMPLEMENT IMG RESOLVE (Media Proxy & Matoi URLs)**
+   - Implement a `/api/provider/media?url=` proxy endpoint to bypass hotlink protection.
+   - Create a `resolveMatoiURLs()` helper inside the handler.
+   - Inject the resolved local proxy URLs into `matoi_file_url`, `matoi_preview_url`, and `matoi_sample_url` before returning the JSON payload.
 
 ## Common Commands
 
