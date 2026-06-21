@@ -553,6 +553,98 @@ paths:
       summary: Get tag completion from Rule34 (Eiyuu logic)
       tags:
       - rule34
+  /api/safebooru/media:
+    get:
+      parameters:
+      - description: Direct media URL to proxy
+        in: query
+        name: url
+        required: true
+        type: string
+      produces:
+      - '*/*'
+      responses:
+        "200":
+          description: Image or Video file
+        "400":
+          description: Missing or invalid URL
+          schema:
+            type: string
+        "500":
+          description: Failed to proxy media
+          schema:
+            type: string
+      summary: Proxy Safebooru Media
+      tags:
+      - safebooru
+  /api/safebooru/posts:
+    get:
+      parameters:
+      - description: Tags to search for
+        in: query
+        name: tags
+        type: string
+      - description: Number of results (default 20, max 100)
+        in: query
+        name: limit
+        type: integer
+      - description: Page number (default 1)
+        in: query
+        name: page
+        type: integer
+      - description: Randomize the order of the results
+        in: query
+        name: shuffle
+        type: boolean
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - ApiKeyAuth: []
+      summary: Fetch Safebooru Posts
+      tags:
+      - safebooru
+  /api/safebooru/query_completion:
+    get:
+      parameters:
+      - description: Tag prefix to search
+        in: query
+        name: tags
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - ApiKeyAuth: []
+      summary: Safebooru Tag Autocomplete
+      tags:
+      - safebooru
   /api/tbib/media:
     get:
       parameters:
@@ -783,4 +875,5 @@ tags:
 - name: tbib
 - name: xbooru
 - name: hypnohub
+- name: safebooru
 - name: system
