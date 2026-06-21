@@ -15,7 +15,7 @@ import (
 
 // AppVersion defines the current version of the application.
 // Can be overridden at build time using -ldflags="-X 'matoi/config.AppVersion=xxx'"
-var AppVersion = "7.0.0-alpha"
+var AppVersion = "8.0.0-alpha"
 
 // Config holds all the configuration variables for the application.
 type Config struct {
@@ -47,6 +47,8 @@ type Config struct {
 	HypnohubReturnLimit  string
 	SafebooruURL         string
 	SafebooruReturnLimit string
+	YandereURL           string
+	YandereReturnLimit   string
 }
 
 // LoadConfig loads the environment variables from .env or standard env variables, falling back to defaults if not set.
@@ -151,6 +153,16 @@ func LoadConfig() *Config {
 		safebooruLimit = "100"
 	}
 
+	yandereURL := os.Getenv("YANDERE_URL")
+	if yandereURL == "" {
+		yandereURL = "https://yande.re/post.json"
+	}
+
+	yandereLimit := os.Getenv("YANDERE_RETURN_LIMIT")
+	if yandereLimit == "" {
+		yandereLimit = "100"
+	}
+
 	return &Config{
 		Port:                 port,
 		ResolverURL:          os.Getenv("RESOLVER_URL"),
@@ -180,5 +192,7 @@ func LoadConfig() *Config {
 		HypnohubReturnLimit:  hypnohubLimit,
 		SafebooruURL:         safebooruURL,
 		SafebooruReturnLimit: safebooruLimit,
+		YandereURL:           yandereURL,
+		YandereReturnLimit:   yandereLimit,
 	}
 }
