@@ -1,0 +1,28 @@
+version: '3'
+
+tasks:
+  dev:
+    desc: Run the application using air for hot-reloading
+    cmds:
+      - air
+
+  build:
+    desc: Compile the application into a binary
+    cmds:
+      - go build -o bin/matoi.exe main.go
+
+  prod:
+    desc: Build the binary and run it
+    deps: [build]
+    cmds:
+      - ./bin/matoi.exe
+
+  lint:
+    desc: Run golangci-lint
+    cmds:
+      - golangci-lint run
+
+  version:
+    desc: Show the application version
+    cmds:
+      - go run main.go -version
