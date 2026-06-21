@@ -1,0 +1,7 @@
+{
+    "makefile.configureOnOpen": false,
+    "go.formatTool": "gofumpt",
+    "gopls": {
+        "formatting.gofumpt": true
+    }
+}

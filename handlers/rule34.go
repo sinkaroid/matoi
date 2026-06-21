@@ -5,6 +5,7 @@ import (
 	"crypto/tls"
 	"fmt"
 	"io"
+	"log"
 	"matoi/cache"
 	"matoi/models"
 	"matoi/providers"
@@ -198,4 +199,59 @@ func (h *Rule34Handler) resolveMatoiURLs(c fiber.Ctx, posts []models.Post) {
 			p.MatoiSampleURL = fmt.Sprintf("%s/api/rule34/media?url=%s", baseURL, url.QueryEscape(p.SampleURL))
 		}
 	}
+}
+
+// QueryCompletionResponse defines the JSON response schema for tag autocomplete.
+type QueryCompletionResponse struct {
+	Success bool     `json:"success"`
+	Tags    []string `json:"tags"`
+}
+
+// QueryCompletion handles the /api/rule34/query_completion endpoint.
+//
+//	@Summary		Get tag completion from Rule34 (Eiyuu logic)
+//	@Description	Scrapes autocomplete tags from Rule34 using wildcard matching.
+//	@Tags			rule34
+//	@Produce		json
+//	@Param			tags	query		string	true	"Tag query to autocomplete (e.g. jeanne)"
+//	@Success		200		{object}	QueryCompletionResponse
+//	@Failure		400		{object}	main.ErrorResponse
+//	@Failure		502		{object}	main.ErrorResponse
+//	@Security		ApiKeyAuth
+//	@Router			/api/rule34/query_completion [get]
+func (h *Rule34Handler) QueryCompletion(c fiber.Ctx) error {
+	query := c.Query("tags", "")
+	if query == "" {
+		return fiber.NewError(http.StatusBadRequest, "tags query parameter is required")
+	}
+
+	// Cache key format: rule34:autocomplete:query
+	cacheKey := fmt.Sprintf("rule34:autocomplete:%s", query)
+	ctx := c.Context()
+
+	// Try to get from cache first
+	var tags []string
+	found, err := cache.Get(ctx, cacheKey, &tags)
+	if err == nil && found {
+		return c.Status(fiber.StatusOK).JSON(QueryCompletionResponse{
+			Success: true,
+			Tags:    tags,
+		})
+	}
+
+	// Fetch from upstream
+	tags, err = h.provider.QueryCompletion(ctx, query)
+	if err != nil {
+		return fiber.NewError(http.StatusBadGateway, fmt.Sprintf("Upstream fetch failed: %v", err))
+	}
+
+	// Cache the result for 24 hours (booru tags are mostly static)
+	if err := cache.Set(ctx, cacheKey, tags, 24*time.Hour); err != nil {
+		log.Printf("Failed to cache tags for query %s: %v", query, err)
+	}
+
+	return c.Status(fiber.StatusOK).JSON(QueryCompletionResponse{
+		Success: true,
+		Tags:    tags,
+	})
 }

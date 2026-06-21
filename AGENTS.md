@@ -102,6 +102,14 @@ Stack: Fiber v3, Redis (Keyv-equivalent caching), Swagger (swag + swaggerui).
 - Use Fiber's error handler — return `fiber.NewError(status, message)`
 - Never return raw Go errors to the client
 
+### Query Completion (Eiyuu Logic)
+- **Mandatory Endpoint**: Every provider MUST implement a `/query_completion?tags=` endpoint.
+- **Implementation Source**: You must study and replicate the logic from the npm module `eiyuu` (by sinkaroid).
+- Eiyuu performs web scraping via HTML DOM parsing to provide tag autocomplete bypassing API limitations.
+- In Go, use `github.com/PuerkitoBio/goquery` as the Cheerio equivalent to parse the HTML.
+- **Data Sanitization**: Ensure tags are fully sanitized (e.g., use `url.QueryUnescape` and `html.UnescapeString`) so HTML entities do not leak into the JSON response.
+- **Caching**: Autocomplete responses must be cached in Redis with a 24-hour TTL (`24 * time.Hour`), as booru tags rarely change rapidly.
+
 ## Common Commands
 
 Using Taskfile (`task -l` for all commands):

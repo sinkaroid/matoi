@@ -28,6 +28,15 @@ definitions:
       success:
         type: boolean
     type: object
+  handlers.QueryCompletionResponse:
+    properties:
+      success:
+        type: boolean
+      tags:
+        items:
+          type: string
+        type: array
+    type: object
   handlers.Rule34Response:
     properties:
       count:
@@ -37,6 +46,13 @@ definitions:
           $ref: '#/definitions/models.Post'
         type: array
       provider:
+        type: string
+      success:
+        type: boolean
+    type: object
+  main.ErrorResponse:
+    properties:
+      reason:
         type: string
       success:
         type: boolean
@@ -150,6 +166,35 @@ paths:
       security:
       - ApiKeyAuth: []
       summary: Get posts from Rule34
+      tags:
+      - rule34
+  /api/rule34/query_completion:
+    get:
+      description: Scrapes autocomplete tags from Rule34 using wildcard matching.
+      parameters:
+      - description: Tag query to autocomplete (e.g. jeanne)
+        in: query
+        name: tags
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.QueryCompletionResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/main.ErrorResponse'
+        "502":
+          description: Bad Gateway
+          schema:
+            $ref: '#/definitions/main.ErrorResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Get tag completion from Rule34 (Eiyuu logic)
       tags:
       - rule34
   /ping:

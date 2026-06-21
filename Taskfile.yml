@@ -26,3 +26,19 @@ tasks:
     desc: Show the application version
     cmds:
       - go run main.go -version
+
+  test-goquery:
+    desc: Run the goquery prototype test script
+    cmds:
+      - go test -v ./dev_tools -run TestGoquery
+
+  qlty-all:
+    desc: Run qlty check
+    cmds:
+      - qlty check --all
+
+  qlty-smells:
+    desc: Run qlty smells
+    cmds:
+      - qlty smells --all
+

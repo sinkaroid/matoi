@@ -49,4 +49,5 @@ func SetupRoutes(app *fiber.App, cfg *config.Config, rule34Handler *handlers.Rul
 
 	// Register Rule34 protected endpoints
 	api.Get("/rule34/posts", rule34Handler.GetPosts)
+	api.Get("/rule34/query_completion", rule34Handler.QueryCompletion)
 }

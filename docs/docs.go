@@ -127,6 +127,52 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/rule34/query_completion": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Scrapes autocomplete tags from Rule34 using wildcard matching.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "rule34"
+                ],
+                "summary": "Get tag completion from Rule34 (Eiyuu logic)",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Tag query to autocomplete (e.g. jeanne)",
+                        "name": "tags",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.QueryCompletionResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/main.ErrorResponse"
+                        }
+                    },
+                    "502": {
+                        "description": "Bad Gateway",
+                        "schema": {
+                            "$ref": "#/definitions/main.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/ping": {
             "get": {
                 "produces": [
@@ -200,6 +246,20 @@ const docTemplate = `{
                 }
             }
         },
+        "handlers.QueryCompletionResponse": {
+            "type": "object",
+            "properties": {
+                "success": {
+                    "type": "boolean"
+                },
+                "tags": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                }
+            }
+        },
         "handlers.Rule34Response": {
             "type": "object",
             "properties": {
@@ -213,6 +273,17 @@ const docTemplate = `{
                     }
                 },
                 "provider": {
+                    "type": "string"
+                },
+                "success": {
+                    "type": "boolean"
+                }
+            }
+        },
+        "main.ErrorResponse": {
+            "type": "object",
+            "properties": {
+                "reason": {
                     "type": "string"
                 },
                 "success": {
