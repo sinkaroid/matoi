@@ -13,7 +13,7 @@ import (
 )
 
 // SetupRoutes registers all routes for the application, accepting handlers via dependency injection.
-func SetupRoutes(app *fiber.App, cfg *config.Config, rule34Handler *handlers.Rule34Handler, danbooruHandler *handlers.DanbooruHandler, gelbooruHandler *handlers.GelbooruHandler, tbibHandler *handlers.TbibHandler, xbooruHandler *handlers.XbooruHandler, hypnohubHandler *handlers.HypnohubHandler, graphqlHandler *handlers.GraphQLHandler) {
+func SetupRoutes(app *fiber.App, cfg *config.Config, rule34Handler *handlers.Rule34Handler, danbooruHandler *handlers.DanbooruHandler, gelbooruHandler *handlers.GelbooruHandler, tbibHandler *handlers.TbibHandler, xbooruHandler *handlers.XbooruHandler, hypnohubHandler *handlers.HypnohubHandler, safebooruHandler *handlers.SafebooruHandler, graphqlHandler *handlers.GraphQLHandler) {
 	// Enable CORS globally
 	app.Use(cors.New())
 
@@ -48,6 +48,7 @@ func SetupRoutes(app *fiber.App, cfg *config.Config, rule34Handler *handlers.Rul
 	app.Get("/api/tbib/media", tbibHandler.ProxyMedia)
 	app.Get("/api/xbooru/media", xbooruHandler.ProxyMedia)
 	app.Get("/api/hypnohub/media", hypnohubHandler.ProxyMedia)
+	app.Get("/api/safebooru/media", safebooruHandler.ProxyMedia)
 
 	// Protected API Group
 	api := app.Group("/api", authMiddleware)
@@ -75,6 +76,10 @@ func SetupRoutes(app *fiber.App, cfg *config.Config, rule34Handler *handlers.Rul
 	// Register Hypnohub protected endpoints
 	api.Get("/hypnohub/posts", hypnohubHandler.GetPosts)
 	api.Get("/hypnohub/query_completion", hypnohubHandler.QueryCompletion)
+
+	// Register Safebooru protected endpoints
+	api.Get("/safebooru/posts", safebooruHandler.GetPosts)
+	api.Get("/safebooru/query_completion", safebooruHandler.QueryCompletion)
 
 	// Register GraphQL endpoints
 	if cfg.EnableGraphQL && graphqlHandler != nil {

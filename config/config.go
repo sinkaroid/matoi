@@ -15,36 +15,38 @@ import (
 
 // AppVersion defines the current version of the application.
 // Can be overridden at build time using -ldflags="-X 'matoi/config.AppVersion=xxx'"
-var AppVersion = "6.1.0-alpha"
+var AppVersion = "7.0.0-alpha"
 
 // Config holds all the configuration variables for the application.
 type Config struct {
-	Port                string
-	ResolverURL         string
-	UserAgent           string
-	EnableLogs          bool
-	EnableGraphQL       bool
-	APIKey              string
-	RedisURL            string
-	RedisExpireCache    time.Duration
-	DanbooruURL         string
-	DanbooruReturnLmt   int
-	DanbooruAPIID       string
-	DanbooruAPIKey      string
-	GelbooruURL         string
-	GelbooruReturnLmt   int
-	GelbooruAPIKey      string
-	GelbooruUserID      string
-	Rule34URL           string
-	Rule34ReturnLimit   string
-	Rule34APIID         string
-	Rule34APIKey        string
-	TbibURL             string
-	TbibReturnLimit     string
-	XbooruURL           string
-	XbooruReturnLimit   string
-	HypnohubURL         string
-	HypnohubReturnLimit string
+	Port                 string
+	ResolverURL          string
+	UserAgent            string
+	EnableLogs           bool
+	EnableGraphQL        bool
+	APIKey               string
+	RedisURL             string
+	RedisExpireCache     time.Duration
+	DanbooruURL          string
+	DanbooruReturnLmt    int
+	DanbooruAPIID        string
+	DanbooruAPIKey       string
+	GelbooruURL          string
+	GelbooruReturnLmt    int
+	GelbooruAPIKey       string
+	GelbooruUserID       string
+	Rule34URL            string
+	Rule34ReturnLimit    string
+	Rule34APIID          string
+	Rule34APIKey         string
+	TbibURL              string
+	TbibReturnLimit      string
+	XbooruURL            string
+	XbooruReturnLimit    string
+	HypnohubURL          string
+	HypnohubReturnLimit  string
+	SafebooruURL         string
+	SafebooruReturnLimit string
 }
 
 // LoadConfig loads the environment variables from .env or standard env variables, falling back to defaults if not set.
@@ -139,32 +141,44 @@ func LoadConfig() *Config {
 		hypnohubLimit = "100"
 	}
 
+	safebooruURL := os.Getenv("SAFEBOORU_URL")
+	if safebooruURL == "" {
+		safebooruURL = "https://safebooru.org/index.php"
+	}
+
+	safebooruLimit := os.Getenv("SAFEBOORU_RETURN_LIMIT")
+	if safebooruLimit == "" {
+		safebooruLimit = "100"
+	}
+
 	return &Config{
-		Port:                port,
-		ResolverURL:         os.Getenv("RESOLVER_URL"),
-		UserAgent:           userAgent,
-		EnableLogs:          enableLogs,
-		EnableGraphQL:       enableGraphQL,
-		APIKey:              apiKey,
-		RedisURL:            redisURL,
-		RedisExpireCache:    redisExpire,
-		DanbooruURL:         os.Getenv("DANBOORU_URL"),
-		DanbooruReturnLmt:   danbooruLimit,
-		DanbooruAPIID:       os.Getenv("DANBOORU_API_ID"),
-		DanbooruAPIKey:      os.Getenv("DANBOORU_API_KEY"),
-		GelbooruURL:         gelbooruURL,
-		GelbooruReturnLmt:   gelbooruLimit,
-		GelbooruAPIKey:      os.Getenv("GELBOORU_API_KEY"),
-		GelbooruUserID:      os.Getenv("GELBOORU_API_ID"),
-		Rule34URL:           rule34URL,
-		Rule34ReturnLimit:   rule34Limit,
-		Rule34APIID:         os.Getenv("RULE34_API_ID"),
-		Rule34APIKey:        os.Getenv("RULE34_API_KEY"),
-		TbibURL:             tbibURL,
-		TbibReturnLimit:     tbibLimit,
-		XbooruURL:           xbooruURL,
-		XbooruReturnLimit:   xbooruLimit,
-		HypnohubURL:         hypnohubURL,
-		HypnohubReturnLimit: hypnohubLimit,
+		Port:                 port,
+		ResolverURL:          os.Getenv("RESOLVER_URL"),
+		UserAgent:            userAgent,
+		EnableLogs:           enableLogs,
+		EnableGraphQL:        enableGraphQL,
+		APIKey:               apiKey,
+		RedisURL:             redisURL,
+		RedisExpireCache:     redisExpire,
+		DanbooruURL:          os.Getenv("DANBOORU_URL"),
+		DanbooruReturnLmt:    danbooruLimit,
+		DanbooruAPIID:        os.Getenv("DANBOORU_API_ID"),
+		DanbooruAPIKey:       os.Getenv("DANBOORU_API_KEY"),
+		GelbooruURL:          gelbooruURL,
+		GelbooruReturnLmt:    gelbooruLimit,
+		GelbooruAPIKey:       os.Getenv("GELBOORU_API_KEY"),
+		GelbooruUserID:       os.Getenv("GELBOORU_API_ID"),
+		Rule34URL:            rule34URL,
+		Rule34ReturnLimit:    rule34Limit,
+		Rule34APIID:          os.Getenv("RULE34_API_ID"),
+		Rule34APIKey:         os.Getenv("RULE34_API_KEY"),
+		TbibURL:              tbibURL,
+		TbibReturnLimit:      tbibLimit,
+		XbooruURL:            xbooruURL,
+		XbooruReturnLimit:    xbooruLimit,
+		HypnohubURL:          hypnohubURL,
+		HypnohubReturnLimit:  hypnohubLimit,
+		SafebooruURL:         safebooruURL,
+		SafebooruReturnLimit: safebooruLimit,
 	}
 }
