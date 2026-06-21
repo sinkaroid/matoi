@@ -3,7 +3,6 @@ package models
 
 // Post represents a normalized post across all booru providers.
 type Post struct {
-	Provider        string   `json:"provider"`
 	ID              int      `json:"id"`
 	Directory       int      `json:"directory"`
 	FileURL         string   `json:"file_url"`
@@ -17,4 +16,5 @@ type Post struct {
 	Source          string   `json:"source"`
 	Image           string   `json:"image"`
 	Tags            []string `json:"tags"`
+	Link            string   `json:"link"`
 }
