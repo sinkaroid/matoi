@@ -171,7 +171,7 @@ func (p *GelbooruProvider) buildURL(tags string, limit, page int) (string, error
 	q.Set("json", "1")
 	q.Set("tags", tags)
 	q.Set("limit", strconv.Itoa(limit))
-	q.Set("pid", strconv.Itoa(page)) // Map Matoi page directly to Gelbooru pid
+	q.Set("pid", strconv.Itoa(page-1)) // 0-based page index
 
 	if p.Cfg.GelbooruAPIKey != "" {
 		q.Set("api_key", p.Cfg.GelbooruAPIKey)
