@@ -70,7 +70,7 @@ func main() {
 
 	var graphqlHandler *handlers.GraphQLHandler
 	if cfg.EnableGraphQL {
-		graphqlHandler = handlers.NewGraphQLHandler(cfg, rule34Provider)
+		graphqlHandler = handlers.NewGraphQLHandler(cfg, danbooruProvider, gelbooruProvider, rule34Provider, tbibProvider)
 	}
 
 	// Initialize Go Fiber app with a custom global error handler

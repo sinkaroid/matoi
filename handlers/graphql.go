@@ -19,16 +19,22 @@ import (
 
 // GraphQLHandler manages the GraphQL schema and execution.
 type GraphQLHandler struct {
-	cfg            *config.Config
-	schema         graphql.Schema
-	rule34Provider *providers.Rule34Provider
+	cfg              *config.Config
+	schema           graphql.Schema
+	danbooruProvider *providers.DanbooruProvider
+	gelbooruProvider *providers.GelbooruProvider
+	rule34Provider   *providers.Rule34Provider
+	tbibProvider     *providers.TbibProvider
 }
 
 // NewGraphQLHandler initializes the GraphQL schema and returns the handler.
-func NewGraphQLHandler(cfg *config.Config, r34 *providers.Rule34Provider) *GraphQLHandler {
+func NewGraphQLHandler(cfg *config.Config, dan *providers.DanbooruProvider, gel *providers.GelbooruProvider, r34 *providers.Rule34Provider, tbib *providers.TbibProvider) *GraphQLHandler {
 	h := &GraphQLHandler{
-		cfg:            cfg,
-		rule34Provider: r34,
+		cfg:              cfg,
+		danbooruProvider: dan,
+		gelbooruProvider: gel,
+		rule34Provider:   r34,
+		tbibProvider:     tbib,
 	}
 	h.initSchema()
 	return h
@@ -55,38 +61,43 @@ func (h *GraphQLHandler) initSchema() {
 		},
 	})
 
-	rule34Type := graphql.NewObject(graphql.ObjectConfig{
-		Name: "Rule34",
-		Fields: graphql.Fields{
-			"posts": &graphql.Field{
-				Type: graphql.NewList(postType),
-				Args: graphql.FieldConfigArgument{
-					"tags":    &graphql.ArgumentConfig{Type: graphql.String},
-					"limit":   &graphql.ArgumentConfig{Type: graphql.Int},
-					"page":    &graphql.ArgumentConfig{Type: graphql.Int},
-					"shuffle": &graphql.ArgumentConfig{Type: graphql.Boolean},
+	createProviderType := func(name string, resolvePosts, resolveCompletion graphql.FieldResolveFn) *graphql.Object {
+		return graphql.NewObject(graphql.ObjectConfig{
+			Name: name,
+			Fields: graphql.Fields{
+				"posts": &graphql.Field{
+					Type: graphql.NewList(postType),
+					Args: graphql.FieldConfigArgument{
+						"tags":    &graphql.ArgumentConfig{Type: graphql.String},
+						"limit":   &graphql.ArgumentConfig{Type: graphql.Int},
+						"page":    &graphql.ArgumentConfig{Type: graphql.Int},
+						"shuffle": &graphql.ArgumentConfig{Type: graphql.Boolean},
+					},
+					Resolve: resolvePosts,
 				},
-				Resolve: h.resolveRule34Posts,
-			},
-			"completion": &graphql.Field{
-				Type: graphql.NewList(graphql.String),
-				Args: graphql.FieldConfigArgument{
-					"tags": &graphql.ArgumentConfig{Type: graphql.NewNonNull(graphql.String)},
+				"completion": &graphql.Field{
+					Type: graphql.NewList(graphql.String),
+					Args: graphql.FieldConfigArgument{
+						"tags": &graphql.ArgumentConfig{Type: graphql.NewNonNull(graphql.String)},
+					},
+					Resolve: resolveCompletion,
 				},
-				Resolve: h.resolveRule34Completion,
 			},
-		},
-	})
+		})
+	}
+
+	danbooruType := createProviderType("Danbooru", h.resolveDanbooruPosts, h.resolveDanbooruCompletion)
+	gelbooruType := createProviderType("Gelbooru", h.resolveGelbooruPosts, h.resolveGelbooruCompletion)
+	rule34Type := createProviderType("Rule34", h.resolveRule34Posts, h.resolveRule34Completion)
+	tbibType := createProviderType("Tbib", h.resolveTbibPosts, h.resolveTbibCompletion)
 
 	queryType := graphql.NewObject(graphql.ObjectConfig{
 		Name: "Query",
 		Fields: graphql.Fields{
-			"rule34": &graphql.Field{
-				Type: rule34Type,
-				Resolve: func(_ graphql.ResolveParams) (interface{}, error) {
-					return struct{}{}, nil
-				},
-			},
+			"danbooru": &graphql.Field{Type: danbooruType, Resolve: func(_ graphql.ResolveParams) (interface{}, error) { return struct{}{}, nil }},
+			"gelbooru": &graphql.Field{Type: gelbooruType, Resolve: func(_ graphql.ResolveParams) (interface{}, error) { return struct{}{}, nil }},
+			"rule34":   &graphql.Field{Type: rule34Type, Resolve: func(_ graphql.ResolveParams) (interface{}, error) { return struct{}{}, nil }},
+			"tbib":     &graphql.Field{Type: tbibType, Resolve: func(_ graphql.ResolveParams) (interface{}, error) { return struct{}{}, nil }},
 		},
 	})
 
@@ -102,8 +113,8 @@ func (h *GraphQLHandler) initSchema() {
 
 type contextKey string
 
-//nolint:gocyclo,gocognit,gocritic // Parsing request parameters makes this function complex, and signature is required by graphql-go
-func (h *GraphQLHandler) resolveRule34Posts(p graphql.ResolveParams) (interface{}, error) {
+//nolint:gocyclo,gocognit,gocritic // Parsing request parameters makes this function complex
+func (h *GraphQLHandler) resolveGenericPosts(p graphql.ResolveParams, providerName string, fetchFunc func(context.Context, string, int, int) ([]models.Post, error)) (interface{}, error) {
 	tags, ok := p.Args["tags"].(string)
 	if !ok {
 		tags = ""
@@ -130,11 +141,11 @@ func (h *GraphQLHandler) resolveRule34Posts(p graphql.ResolveParams) (interface{
 	}
 	ctx := p.Context
 
-	cacheKey := fmt.Sprintf("rule34:posts:%s:%d:%d", tags, limit, page)
+	cacheKey := fmt.Sprintf("%s:posts:%s:%d:%d", providerName, tags, limit, page)
 	var posts []models.Post
 	found, err := cache.Get(ctx, cacheKey, &posts)
 	if err == nil && found {
-		h.resolveMatoiURLs(baseURL, posts)
+		h.resolveMatoiURLs(baseURL, providerName, posts)
 		if shuffle && len(posts) > 0 {
 			rand.Shuffle(len(posts), func(i, j int) {
 				posts[i], posts[j] = posts[j], posts[i]
@@ -143,7 +154,7 @@ func (h *GraphQLHandler) resolveRule34Posts(p graphql.ResolveParams) (interface{
 		return posts, nil
 	}
 
-	posts, err = h.rule34Provider.FetchPosts(ctx, tags, limit, page)
+	posts, err = fetchFunc(ctx, tags, limit, page)
 	if err != nil {
 		return nil, fmt.Errorf("upstream fetch failed: %w", err)
 	}
@@ -154,7 +165,7 @@ func (h *GraphQLHandler) resolveRule34Posts(p graphql.ResolveParams) (interface{
 		}
 	}
 
-	h.resolveMatoiURLs(baseURL, posts)
+	h.resolveMatoiURLs(baseURL, providerName, posts)
 	if shuffle && len(posts) > 0 {
 		rand.Shuffle(len(posts), func(i, j int) {
 			posts[i], posts[j] = posts[j], posts[i]
@@ -168,15 +179,15 @@ func (h *GraphQLHandler) resolveRule34Posts(p graphql.ResolveParams) (interface{
 	return posts, nil
 }
 
-//nolint:gocritic // signature is required by graphql-go
-func (h *GraphQLHandler) resolveRule34Completion(p graphql.ResolveParams) (interface{}, error) {
+//nolint:gocritic // signature required
+func (h *GraphQLHandler) resolveGenericCompletion(p graphql.ResolveParams, fetchFunc func(context.Context, string) ([]string, error)) (interface{}, error) {
 	tags, ok := p.Args["tags"].(string)
 	if !ok || tags == "" {
 		return []string{}, nil
 	}
 
 	ctx := p.Context
-	res, err := h.rule34Provider.QueryCompletion(ctx, tags)
+	res, err := fetchFunc(ctx, tags)
 	if err != nil {
 		return nil, fmt.Errorf("upstream fetch failed: %w", err)
 	}
@@ -187,7 +198,47 @@ func (h *GraphQLHandler) resolveRule34Completion(p graphql.ResolveParams) (inter
 	return res, nil
 }
 
-func (h *GraphQLHandler) resolveMatoiURLs(baseURL string, posts []models.Post) {
+//nolint:gocritic // signature required
+func (h *GraphQLHandler) resolveDanbooruPosts(p graphql.ResolveParams) (interface{}, error) {
+	return h.resolveGenericPosts(p, "danbooru", h.danbooruProvider.FetchPosts)
+}
+
+//nolint:gocritic // signature required
+func (h *GraphQLHandler) resolveDanbooruCompletion(p graphql.ResolveParams) (interface{}, error) {
+	return h.resolveGenericCompletion(p, h.danbooruProvider.QueryCompletion)
+}
+
+//nolint:gocritic // signature required
+func (h *GraphQLHandler) resolveGelbooruPosts(p graphql.ResolveParams) (interface{}, error) {
+	return h.resolveGenericPosts(p, "gelbooru", h.gelbooruProvider.FetchPosts)
+}
+
+//nolint:gocritic // signature required
+func (h *GraphQLHandler) resolveGelbooruCompletion(p graphql.ResolveParams) (interface{}, error) {
+	return h.resolveGenericCompletion(p, h.gelbooruProvider.QueryCompletion)
+}
+
+//nolint:gocritic // signature required
+func (h *GraphQLHandler) resolveRule34Posts(p graphql.ResolveParams) (interface{}, error) {
+	return h.resolveGenericPosts(p, "rule34", h.rule34Provider.FetchPosts)
+}
+
+//nolint:gocritic // signature required
+func (h *GraphQLHandler) resolveRule34Completion(p graphql.ResolveParams) (interface{}, error) {
+	return h.resolveGenericCompletion(p, h.rule34Provider.QueryCompletion)
+}
+
+//nolint:gocritic // signature required
+func (h *GraphQLHandler) resolveTbibPosts(p graphql.ResolveParams) (interface{}, error) {
+	return h.resolveGenericPosts(p, "tbib", h.tbibProvider.FetchPosts)
+}
+
+//nolint:gocritic // signature required
+func (h *GraphQLHandler) resolveTbibCompletion(p graphql.ResolveParams) (interface{}, error) {
+	return h.resolveGenericCompletion(p, h.tbibProvider.QueryCompletion)
+}
+
+func (h *GraphQLHandler) resolveMatoiURLs(baseURL, providerName string, posts []models.Post) {
 	if h.cfg.ResolverURL != "" {
 		baseURL = h.cfg.ResolverURL
 	}
@@ -196,13 +247,13 @@ func (h *GraphQLHandler) resolveMatoiURLs(baseURL string, posts []models.Post) {
 	for i := range posts {
 		p := &posts[i]
 		if p.FileURL != "" {
-			p.MatoiFileURL = fmt.Sprintf("%s/api/rule34/media?url=%s", baseURL, url.QueryEscape(p.FileURL))
+			p.MatoiFileURL = fmt.Sprintf("%s/api/%s/media?url=%s", baseURL, providerName, url.QueryEscape(p.FileURL))
 		}
 		if p.PreviewURL != "" {
-			p.MatoiPreviewURL = fmt.Sprintf("%s/api/rule34/media?url=%s", baseURL, url.QueryEscape(p.PreviewURL))
+			p.MatoiPreviewURL = fmt.Sprintf("%s/api/%s/media?url=%s", baseURL, providerName, url.QueryEscape(p.PreviewURL))
 		}
 		if p.SampleURL != "" {
-			p.MatoiSampleURL = fmt.Sprintf("%s/api/rule34/media?url=%s", baseURL, url.QueryEscape(p.SampleURL))
+			p.MatoiSampleURL = fmt.Sprintf("%s/api/%s/media?url=%s", baseURL, providerName, url.QueryEscape(p.SampleURL))
 		}
 	}
 }
