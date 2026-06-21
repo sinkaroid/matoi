@@ -1,7 +1,6 @@
 // Package main is the entry point for the Matoi API service.
 //
 //	@title			Matoi API Wrapper
-//	@version		1.0.2-alpha
 //	@description	REST API wrapper/binding for imageboard APIs (Danbooru, Gelbooru, Rule34).
 //	@host			localhost:3000
 //	@BasePath		/
@@ -9,12 +8,15 @@ package main
 
 import (
 	"errors"
+	"flag"
+	"fmt"
 	"log"
 	"matoi/cache"
 	"matoi/config"
 	"matoi/handlers"
 	"matoi/providers"
 	"matoi/router"
+	"os"
 
 	"github.com/gofiber/fiber/v3"
 )
@@ -26,6 +28,14 @@ type ErrorResponse struct {
 }
 
 func main() {
+	versionFlag := flag.Bool("version", false, "Print the application version")
+	flag.Parse()
+
+	if *versionFlag {
+		fmt.Printf("Matoi API Wrapper v%s\n", config.AppVersion)
+		os.Exit(0)
+	}
+
 	// Load environment variables config
 	cfg := config.LoadConfig()
 
