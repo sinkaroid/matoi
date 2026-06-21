@@ -245,12 +245,6 @@
                         "description": "Page number (default 1)",
                         "name": "page",
                         "in": "query"
-                    },
-                    {
-                        "type": "boolean",
-                        "description": "Shuffle the results",
-                        "name": "shuffle",
-                        "in": "query"
                     }
                 ],
                 "responses": {
@@ -463,6 +457,151 @@
                 }
             }
         },
+        "/api/tbib/media": {
+            "get": {
+                "tags": [
+                    "tbib"
+                ],
+                "summary": "Proxy and stream TBIB media",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Encoded TBIB media URL",
+                        "name": "url",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Streams the media file"
+                    },
+                    "400": {
+                        "description": "Invalid parameters",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "502": {
+                        "description": "Failed to fetch media",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/tbib/posts": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "tbib"
+                ],
+                "summary": "Get posts from TBIB",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Space-separated tags",
+                        "name": "tags",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Max results (default 20, max 100)",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Page number (default 1)",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "boolean",
+                        "description": "Shuffle the results",
+                        "name": "shuffle",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.TbibResponse"
+                        }
+                    },
+                    "502": {
+                        "description": "Upstream fetch failed",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/tbib/query_completion": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Scrapes autocomplete tags from TBIB using wildcard matching.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "tbib"
+                ],
+                "summary": "Get tag completion from TBIB (Eiyuu logic)",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Tag query to autocomplete (e.g. yuri)",
+                        "name": "tags",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.QueryCompletionResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/main.ErrorResponse"
+                        }
+                    },
+                    "502": {
+                        "description": "Bad Gateway",
+                        "schema": {
+                            "$ref": "#/definitions/main.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/ping": {
             "get": {
                 "produces": [
@@ -610,6 +749,26 @@
                 }
             }
         },
+        "handlers.TbibResponse": {
+            "type": "object",
+            "properties": {
+                "count": {
+                    "type": "integer"
+                },
+                "posts": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.Post"
+                    }
+                },
+                "provider": {
+                    "type": "string"
+                },
+                "success": {
+                    "type": "boolean"
+                }
+            }
+        },
         "main.ErrorResponse": {
             "type": "object",
             "properties": {
@@ -625,7 +784,7 @@
             "type": "object",
             "properties": {
                 "directory": {
-                    "type": "integer"
+                    "type": "string"
                 },
                 "file_url": {
                     "type": "string"

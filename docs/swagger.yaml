@@ -76,6 +76,19 @@ definitions:
       success:
         type: boolean
     type: object
+  handlers.TbibResponse:
+    properties:
+      count:
+        type: integer
+      posts:
+        items:
+          $ref: '#/definitions/models.Post'
+        type: array
+      provider:
+        type: string
+      success:
+        type: boolean
+    type: object
   main.ErrorResponse:
     properties:
       reason:
@@ -86,7 +99,7 @@ definitions:
   models.Post:
     properties:
       directory:
-        type: integer
+        type: string
       file_url:
         type: string
       id:
@@ -270,10 +283,6 @@ paths:
         in: query
         name: page
         type: integer
-      - description: Shuffle the results
-        in: query
-        name: shuffle
-        type: boolean
       produces:
       - application/json
       responses:
@@ -414,6 +423,98 @@ paths:
       summary: Get tag completion from Rule34 (Eiyuu logic)
       tags:
       - rule34
+  /api/tbib/media:
+    get:
+      parameters:
+      - description: Encoded TBIB media URL
+        in: query
+        name: url
+        required: true
+        type: string
+      responses:
+        "200":
+          description: Streams the media file
+        "400":
+          description: Invalid parameters
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "502":
+          description: Failed to fetch media
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Proxy and stream TBIB media
+      tags:
+      - tbib
+  /api/tbib/posts:
+    get:
+      parameters:
+      - description: Space-separated tags
+        in: query
+        name: tags
+        type: string
+      - description: Max results (default 20, max 100)
+        in: query
+        name: limit
+        type: integer
+      - description: Page number (default 1)
+        in: query
+        name: page
+        type: integer
+      - description: Shuffle the results
+        in: query
+        name: shuffle
+        type: boolean
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.TbibResponse'
+        "502":
+          description: Upstream fetch failed
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - ApiKeyAuth: []
+      summary: Get posts from TBIB
+      tags:
+      - tbib
+  /api/tbib/query_completion:
+    get:
+      description: Scrapes autocomplete tags from TBIB using wildcard matching.
+      parameters:
+      - description: Tag query to autocomplete (e.g. yuri)
+        in: query
+        name: tags
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.QueryCompletionResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/main.ErrorResponse'
+        "502":
+          description: Bad Gateway
+          schema:
+            $ref: '#/definitions/main.ErrorResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Get tag completion from TBIB (Eiyuu logic)
+      tags:
+      - tbib
   /ping:
     get:
       produces:
