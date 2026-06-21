@@ -34,6 +34,152 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/danbooru/media": {
+            "get": {
+                "tags": [
+                    "danbooru"
+                ],
+                "summary": "Proxy and stream Danbooru media",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Encoded Danbooru media URL",
+                        "name": "url",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Streams the media file"
+                    },
+                    "400": {
+                        "description": "Invalid parameters",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "502": {
+                        "description": "Failed to fetch media",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/danbooru/posts": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Fetches a list of posts from Danbooru based on provided tags.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "danbooru"
+                ],
+                "summary": "Fetch posts from Danbooru",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Tags to search for",
+                        "name": "tags",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Max results (default 20, max 100)",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Page number (default 1)",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "boolean",
+                        "description": "Shuffle the results",
+                        "name": "shuffle",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.DanbooruResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/danbooru/query_completion": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Provides tag completion via scraping Danbooru's tags directory (Eiyuu logic). Cached for 24 hours.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "danbooru"
+                ],
+                "summary": "Danbooru Tag Autocomplete",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Tag prefix to search for",
+                        "name": "tags",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.QueryCompletionResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/main.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/main.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/api/rule34/media": {
             "get": {
                 "tags": [
@@ -105,6 +251,12 @@ const docTemplate = `{
                         "type": "integer",
                         "description": "Page number (default 1)",
                         "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "boolean",
+                        "description": "Shuffle the results",
+                        "name": "shuffle",
                         "in": "query"
                     }
                 ],
@@ -203,6 +355,26 @@ const docTemplate = `{
         }
     },
     "definitions": {
+        "handlers.DanbooruResponse": {
+            "type": "object",
+            "properties": {
+                "count": {
+                    "type": "integer"
+                },
+                "posts": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.Post"
+                    }
+                },
+                "provider": {
+                    "type": "string"
+                },
+                "success": {
+                    "type": "boolean"
+                }
+            }
+        },
         "handlers.HomeResponse": {
             "type": "object",
             "properties": {
@@ -306,6 +478,9 @@ const docTemplate = `{
                 "image": {
                     "type": "string"
                 },
+                "link": {
+                    "type": "string"
+                },
                 "matoi_file_url": {
                     "type": "string"
                 },
@@ -316,9 +491,6 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "preview_url": {
-                    "type": "string"
-                },
-                "provider": {
                     "type": "string"
                 },
                 "rating": {

@@ -5,7 +5,7 @@ import (
 	"crypto/tls"
 	"fmt"
 	"io"
-	"log"
+	"math/rand/v2"
 	"matoi/cache"
 	"matoi/models"
 	"matoi/providers"
@@ -44,10 +44,13 @@ type Rule34Response struct {
 //	@Param		tags	query		string	false	"Space-separated tags"
 //	@Param		limit	query		int		false	"Max results (default 20, max 100)"
 //	@Param		page	query		int		false	"Page number (default 1)"
+//	@Param		shuffle	query		bool	false	"Shuffle the results"
 //	@Success	200		{object}	Rule34Response
 //	@Failure	502		{object}	map[string]string	"Upstream fetch failed"
 //	@Security	ApiKeyAuth
 //	@Router		/api/rule34/posts [get]
+//
+//nolint:gocyclo,gocognit // Parsing request parameters makes this function complex
 func (h *Rule34Handler) GetPosts(c fiber.Ctx) error {
 	tags := c.Query("tags", "")
 
@@ -75,6 +78,21 @@ func (h *Rule34Handler) GetPosts(c fiber.Ctx) error {
 	if err == nil && found {
 		c.Locals("source", "CACHE")
 		h.resolveMatoiURLs(c, posts)
+
+		if c.Query("shuffle", "false") == "true" && len(posts) > 0 {
+			rand.Shuffle(len(posts), func(i, j int) {
+				posts[i], posts[j] = posts[j], posts[i]
+			})
+		}
+
+		if len(posts) == 0 {
+			return c.Status(http.StatusNotFound).JSON(Rule34Response{
+				Success:  false,
+				Provider: "rule34",
+				Count:    0,
+				Posts:    []models.Post{},
+			})
+		}
 		return c.Status(http.StatusOK).JSON(Rule34Response{
 			Success:  true,
 			Provider: "rule34",
@@ -99,6 +117,21 @@ func (h *Rule34Handler) GetPosts(c fiber.Ctx) error {
 
 	c.Locals("source", "FETCH")
 	h.resolveMatoiURLs(c, posts)
+
+	if c.Query("shuffle", "false") == "true" && len(posts) > 0 {
+		rand.Shuffle(len(posts), func(i, j int) {
+			posts[i], posts[j] = posts[j], posts[i]
+		})
+	}
+
+	if len(posts) == 0 {
+		return c.Status(http.StatusNotFound).JSON(Rule34Response{
+			Success:  false,
+			Provider: "rule34",
+			Count:    0,
+			Posts:    []models.Post{},
+		})
+	}
 
 	return c.Status(http.StatusOK).JSON(Rule34Response{
 		Success:  true,
@@ -225,29 +258,17 @@ func (h *Rule34Handler) QueryCompletion(c fiber.Ctx) error {
 		return fiber.NewError(http.StatusBadRequest, "tags query parameter is required")
 	}
 
-	// Cache key format: rule34:autocomplete:query
-	cacheKey := fmt.Sprintf("rule34:autocomplete:%s", query)
-	ctx := c.Context()
-
-	// Try to get from cache first
-	var tags []string
-	found, err := cache.Get(ctx, cacheKey, &tags)
-	if err == nil && found {
-		return c.Status(fiber.StatusOK).JSON(QueryCompletionResponse{
-			Success: true,
-			Tags:    tags,
-		})
-	}
-
 	// Fetch from upstream
-	tags, err = h.provider.QueryCompletion(ctx, query)
+	tags, err := h.provider.QueryCompletion(c.Context(), query)
 	if err != nil {
 		return fiber.NewError(http.StatusBadGateway, fmt.Sprintf("Upstream fetch failed: %v", err))
 	}
 
-	// Cache the result for 24 hours (booru tags are mostly static)
-	if err := cache.Set(ctx, cacheKey, tags, 24*time.Hour); err != nil {
-		log.Printf("Failed to cache tags for query %s: %v", query, err)
+	if len(tags) == 0 {
+		return c.Status(http.StatusNotFound).JSON(QueryCompletionResponse{
+			Success: false,
+			Tags:    []string{},
+		})
 	}
 
 	return c.Status(fiber.StatusOK).JSON(QueryCompletionResponse{

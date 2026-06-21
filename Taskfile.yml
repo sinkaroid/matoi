@@ -42,3 +42,12 @@ tasks:
     cmds:
       - qlty smells --all
 
+  test-danbooru:
+    desc: Run the Danbooru tags prototype test script
+    cmds:
+      - go test -v ./dev_tools -run TestDanbooruTags
+
+  flush-cache:
+    desc: Flush Redis cache via dev tools
+    cmds:
+      - go test -v ./dev_tools -run TestFlushCache

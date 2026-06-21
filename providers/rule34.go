@@ -132,7 +132,7 @@ func (p *Rule34Provider) QueryCompletion(ctx context.Context, query string) ([]s
 }
 
 func parseAutocompleteTags(doc *goquery.Document) []string {
-	var tags []string
+	tags := []string{}
 	doc.Find("table.highlightable a").Each(func(_ int, s *goquery.Selection) {
 		href, exists := s.Attr("href")
 		if !exists || !strings.Contains(href, "&tags=") {
@@ -195,7 +195,6 @@ func mapPosts(rawPosts []Rule34Post) []models.Post {
 	for i := range rawPosts {
 		rp := &rawPosts[i]
 		posts[i] = models.Post{
-			Provider:   "rule34",
 			ID:         rp.ID,
 			Directory:  rp.Directory,
 			FileURL:    rp.FileURL,
@@ -206,6 +205,7 @@ func mapPosts(rawPosts []Rule34Post) []models.Post {
 			Source:     rp.Source,
 			Image:      rp.Image,
 			Tags:       strings.Fields(rp.Tags),
+			Link:       fmt.Sprintf("https://rule34.xxx/index.php?page=post&s=view&id=%d", rp.ID),
 		}
 	}
 	return posts

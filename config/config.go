@@ -15,7 +15,7 @@ import (
 
 // AppVersion defines the current version of the application.
 // Can be overridden at build time using -ldflags="-X 'matoi/config.AppVersion=xxx'"
-var AppVersion = "1.0.4-alpha"
+var AppVersion = "2.0.1-alpha"
 
 // Config holds all the configuration variables for the application.
 type Config struct {
@@ -26,8 +26,10 @@ type Config struct {
 	APIKey            string
 	RedisURL          string
 	RedisExpireCache  time.Duration
+	DanbooruURL       string
+	DanbooruReturnLmt int
+	DanbooruAPIID     string
 	DanbooruAPIKey    string
-	DanbooruLogin     string
 	GelbooruAPIKey    string
 	GelbooruUserID    string
 	Rule34URL         string
@@ -37,6 +39,8 @@ type Config struct {
 }
 
 // LoadConfig loads the environment variables from .env or standard env variables, falling back to defaults if not set.
+//
+//nolint:gocyclo // Config loading naturally has many assignments
 func LoadConfig() *Config {
 	// Loading .env is optional as environment variables can be set directly in production.
 	if err := godotenv.Load(); err != nil {
@@ -80,6 +84,11 @@ func LoadConfig() *Config {
 	enableLogs := strings.ToLower(strings.TrimSpace(os.Getenv("ENABLE_LOGS"))) == "true"
 	apiKey := os.Getenv("API_KEY")
 
+	danbooruLimit := 100
+	if val, err := strconv.Atoi(os.Getenv("DANBOORU_RETURN_LIMIT")); err == nil && val > 0 {
+		danbooruLimit = val
+	}
+
 	return &Config{
 		Port:              port,
 		ResolverURL:       os.Getenv("RESOLVER_URL"),
@@ -88,8 +97,10 @@ func LoadConfig() *Config {
 		APIKey:            apiKey,
 		RedisURL:          redisURL,
 		RedisExpireCache:  redisExpire,
+		DanbooruURL:       os.Getenv("DANBOORU_URL"),
+		DanbooruReturnLmt: danbooruLimit,
+		DanbooruAPIID:     os.Getenv("DANBOORU_API_ID"),
 		DanbooruAPIKey:    os.Getenv("DANBOORU_API_KEY"),
-		DanbooruLogin:     os.Getenv("DANBOORU_LOGIN"),
 		GelbooruAPIKey:    os.Getenv("GELBOORU_API_KEY"),
 		GelbooruUserID:    os.Getenv("GELBOORU_USER_ID"),
 		Rule34URL:         rule34URL,
