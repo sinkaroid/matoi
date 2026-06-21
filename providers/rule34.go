@@ -6,6 +6,7 @@ import (
 	"crypto/tls"
 	"encoding/json"
 	"fmt"
+	"html"
 	"matoi/config"
 	"matoi/models"
 	"net/http"
@@ -13,6 +14,8 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/PuerkitoBio/goquery"
 )
 
 // Rule34Post represents a raw post response from the Rule34 API.
@@ -82,6 +85,70 @@ func (p *Rule34Provider) FetchPosts(ctx context.Context, tags string, limit, pag
 	}
 
 	return mapPosts(rawPosts), nil
+}
+
+// QueryCompletion fetches Eiyuu-style tag autocomplete suggestions from Rule34.
+func (p *Rule34Provider) QueryCompletion(ctx context.Context, query string) ([]string, error) {
+	// Eiyuu uses the web site, not the API, for autocomplete scraping.
+	urlStr := fmt.Sprintf("https://rule34.xxx/index.php?page=tags&s=list&tags=*%s*&sort=desc&order_by=index_count", query)
+
+	tr := &http.Transport{
+		TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+	}
+	client := &http.Client{
+		Transport: tr,
+		Timeout:   10 * time.Second,
+	}
+
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, urlStr, http.NoBody)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create request: %w", err)
+	}
+
+	if p.Cfg.UserAgent != "" {
+		req.Header.Set("User-Agent", p.Cfg.UserAgent)
+	}
+
+	resp, err := client.Do(req)
+	if err != nil {
+		return nil, fmt.Errorf("upstream request failed: %w", err)
+	}
+	defer func() {
+		if closeErr := resp.Body.Close(); closeErr != nil {
+			_ = closeErr
+		}
+	}()
+
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("unexpected status code from upstream: %d", resp.StatusCode)
+	}
+
+	doc, err := goquery.NewDocumentFromReader(resp.Body)
+	if err != nil {
+		return nil, fmt.Errorf("failed to parse HTML: %w", err)
+	}
+
+	return parseAutocompleteTags(doc), nil
+}
+
+func parseAutocompleteTags(doc *goquery.Document) []string {
+	var tags []string
+	doc.Find("table.highlightable a").Each(func(_ int, s *goquery.Selection) {
+		href, exists := s.Attr("href")
+		if !exists || !strings.Contains(href, "&tags=") {
+			return
+		}
+
+		parts := strings.Split(href, "&tags=")
+		if len(parts) > 1 {
+			decodedURL, err := url.QueryUnescape(parts[1])
+			if err != nil {
+				decodedURL = parts[1] // fallback
+			}
+			tags = append(tags, html.UnescapeString(decodedURL))
+		}
+	})
+	return tags
 }
 
 func (p *Rule34Provider) buildURL(tags string, limit, page int) (string, error) {
