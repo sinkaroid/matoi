@@ -26,6 +26,16 @@ definitions:
       success:
         type: boolean
     type: object
+  handlers.GraphQLRequest:
+    properties:
+      operationName:
+        type: string
+      query:
+        type: string
+      variables:
+        additionalProperties: true
+        type: object
+    type: object
   handlers.HomeResponse:
     properties:
       date:
@@ -130,7 +140,6 @@ definitions:
           type: string
         type: array
     type: object
-host: localhost:3000
 info:
   contact: {}
   description: REST API wrapper/binding for imageboard APIs (Danbooru, Gelbooru, Rule34).
@@ -331,6 +340,35 @@ paths:
       summary: Get tag completion from Gelbooru (Eiyuu logic)
       tags:
       - gelbooru
+  /api/graphql:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: GraphQL Query
+        in: body
+        name: query
+        required: true
+        schema:
+          $ref: '#/definitions/handlers.GraphQLRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - ApiKeyAuth: []
+      summary: GraphQL Endpoint
+      tags:
+      - graphql
   /api/rule34/media:
     get:
       parameters:
@@ -515,6 +553,18 @@ paths:
       summary: Get tag completion from TBIB (Eiyuu logic)
       tags:
       - tbib
+  /graphql:
+    get:
+      produces:
+      - text/html
+      responses:
+        "200":
+          description: GraphiQL HTML page
+          schema:
+            type: string
+      summary: GraphiQL Playground
+      tags:
+      - graphql
   /ping:
     get:
       produces:
@@ -541,3 +591,10 @@ securityDefinitions:
     name: api_key
     type: apiKey
 swagger: "2.0"
+tags:
+- name: graphql
+- name: danbooru
+- name: gelbooru
+- name: rule34
+- name: tbib
+- name: system
