@@ -13,14 +13,14 @@ import (
 )
 
 // SetupRoutes registers all routes for the application, accepting handlers via dependency injection.
-func SetupRoutes(app *fiber.App, cfg *config.Config, rule34Handler *handlers.Rule34Handler, danbooruHandler *handlers.DanbooruHandler, gelbooruHandler *handlers.GelbooruHandler) {
+func SetupRoutes(app *fiber.App, cfg *config.Config, rule34Handler *handlers.Rule34Handler, danbooruHandler *handlers.DanbooruHandler, gelbooruHandler *handlers.GelbooruHandler, tbibHandler *handlers.TbibHandler) {
 	// Enable CORS globally
 	app.Use(cors.New())
 
 	// Request Logger Middleware
 	if cfg.EnableLogs {
 		app.Use(logger.New(logger.Config{
-			Format:     "${time} | ${status} | ${latency} | ${ip} | ${method} ${url} | ${locals:source}${error}\n",
+			Format:     "${time} | ${status} | ${latency} | ${ip} | ${ua} | ${method} ${url} | ${locals:source}${error}\n",
 			TimeFormat: "15:04:05",
 			TimeZone:   "Local",
 		}))
@@ -45,6 +45,7 @@ func SetupRoutes(app *fiber.App, cfg *config.Config, rule34Handler *handlers.Rul
 	app.Get("/api/rule34/media", rule34Handler.ProxyMedia)
 	app.Get("/api/danbooru/media", danbooruHandler.ProxyMedia)
 	app.Get("/api/gelbooru/media", gelbooruHandler.ProxyMedia)
+	app.Get("/api/tbib/media", tbibHandler.ProxyMedia)
 
 	// Protected API Group
 	api := app.Group("/api", authMiddleware)
@@ -60,4 +61,8 @@ func SetupRoutes(app *fiber.App, cfg *config.Config, rule34Handler *handlers.Rul
 	// Register Gelbooru protected endpoints
 	api.Get("/gelbooru/posts", gelbooruHandler.GetPosts)
 	api.Get("/gelbooru/query_completion", gelbooruHandler.QueryCompletion)
+
+	// Register TBIB protected endpoints
+	api.Get("/tbib/posts", tbibHandler.GetPosts)
+	api.Get("/tbib/query_completion", tbibHandler.QueryCompletion)
 }

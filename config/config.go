@@ -38,6 +38,8 @@ type Config struct {
 	Rule34ReturnLimit string
 	Rule34APIID       string
 	Rule34APIKey      string
+	TbibURL           string
+	TbibReturnLimit   string
 }
 
 // LoadConfig loads the environment variables from .env or standard env variables, falling back to defaults if not set.
@@ -75,6 +77,16 @@ func LoadConfig() *Config {
 	rule34Limit := os.Getenv("RULE34_RETURN_LIMIT")
 	if rule34Limit == "" {
 		rule34Limit = "100"
+	}
+
+	tbibURL := os.Getenv("TBIB_URL")
+	if tbibURL == "" {
+		tbibURL = "https://tbib.org/index.php"
+	}
+
+	tbibLimit := os.Getenv("TBIB_RETURN_LIMIT")
+	if tbibLimit == "" {
+		tbibLimit = "100"
 	}
 
 	gelbooruURL := os.Getenv("GELBOORU_URL")
@@ -121,5 +133,7 @@ func LoadConfig() *Config {
 		Rule34ReturnLimit: rule34Limit,
 		Rule34APIID:       os.Getenv("RULE34_API_ID"),
 		Rule34APIKey:      os.Getenv("RULE34_API_KEY"),
+		TbibURL:           tbibURL,
+		TbibReturnLimit:   tbibLimit,
 	}
 }
