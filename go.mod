@@ -3,6 +3,7 @@ module matoi
 go 1.26.4
 
 require (
+	github.com/PuerkitoBio/goquery v1.12.0
 	github.com/gofiber/contrib/v3/swaggerui v1.0.8
 	github.com/gofiber/fiber/v3 v3.3.0
 	github.com/joho/godotenv v1.5.1
@@ -15,6 +16,7 @@ require (
 	github.com/PuerkitoBio/purell v1.1.1 // indirect
 	github.com/PuerkitoBio/urlesc v0.0.0-20170810143723-de5bf2ad4578 // indirect
 	github.com/andybalholm/brotli v1.2.1 // indirect
+	github.com/andybalholm/cascadia v1.3.3 // indirect
 	github.com/cespare/xxhash/v2 v2.3.0 // indirect
 	github.com/go-openapi/jsonpointer v0.19.5 // indirect
 	github.com/go-openapi/jsonreference v0.19.6 // indirect
