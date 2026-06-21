@@ -13,7 +13,7 @@ import (
 )
 
 // SetupRoutes registers all routes for the application, accepting handlers via dependency injection.
-func SetupRoutes(app *fiber.App, cfg *config.Config, rule34Handler *handlers.Rule34Handler, danbooruHandler *handlers.DanbooruHandler) {
+func SetupRoutes(app *fiber.App, cfg *config.Config, rule34Handler *handlers.Rule34Handler, danbooruHandler *handlers.DanbooruHandler, gelbooruHandler *handlers.GelbooruHandler) {
 	// Enable CORS globally
 	app.Use(cors.New())
 
@@ -44,6 +44,7 @@ func SetupRoutes(app *fiber.App, cfg *config.Config, rule34Handler *handlers.Rul
 	// Register Public Media Proxy endpoint (unprotected)
 	app.Get("/api/rule34/media", rule34Handler.ProxyMedia)
 	app.Get("/api/danbooru/media", danbooruHandler.ProxyMedia)
+	app.Get("/api/gelbooru/media", gelbooruHandler.ProxyMedia)
 
 	// Protected API Group
 	api := app.Group("/api", authMiddleware)
@@ -55,4 +56,8 @@ func SetupRoutes(app *fiber.App, cfg *config.Config, rule34Handler *handlers.Rul
 	// Register Danbooru protected endpoints
 	api.Get("/danbooru/posts", danbooruHandler.GetPosts)
 	api.Get("/danbooru/query_completion", danbooruHandler.QueryCompletion)
+
+	// Register Gelbooru protected endpoints
+	api.Get("/gelbooru/posts", gelbooruHandler.GetPosts)
+	api.Get("/gelbooru/query_completion", gelbooruHandler.QueryCompletion)
 }
