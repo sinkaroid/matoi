@@ -61,16 +61,18 @@ func main() {
 	danbooruProvider := providers.NewDanbooruProvider(cfg)
 	gelbooruProvider := providers.NewGelbooruProvider(cfg)
 	tbibProvider := providers.NewTbibProvider(cfg)
+	xbooruProvider := providers.NewXbooruProvider(cfg)
 
 	// Instantiate Handlers
 	rule34Handler := handlers.NewRule34Handler(rule34Provider)
 	danbooruHandler := handlers.NewDanbooruHandler(danbooruProvider)
 	gelbooruHandler := handlers.NewGelbooruHandler(gelbooruProvider)
 	tbibHandler := handlers.NewTbibHandler(tbibProvider)
+	xbooruHandler := handlers.NewXbooruHandler(xbooruProvider)
 
 	var graphqlHandler *handlers.GraphQLHandler
 	if cfg.EnableGraphQL {
-		graphqlHandler = handlers.NewGraphQLHandler(cfg, danbooruProvider, gelbooruProvider, rule34Provider, tbibProvider)
+		graphqlHandler = handlers.NewGraphQLHandler(cfg, danbooruProvider, gelbooruProvider, rule34Provider, tbibProvider, xbooruProvider)
 	}
 
 	// Initialize Go Fiber app with a custom global error handler
@@ -94,7 +96,7 @@ func main() {
 	})
 
 	// Setup application routing with dependency injection
-	router.SetupRoutes(app, cfg, rule34Handler, danbooruHandler, gelbooruHandler, tbibHandler, graphqlHandler)
+	router.SetupRoutes(app, cfg, rule34Handler, danbooruHandler, gelbooruHandler, tbibHandler, xbooruHandler, graphqlHandler)
 
 	// Run Fiber server on configured port
 	log.Printf("Starting server on port %s", cfg.Port)

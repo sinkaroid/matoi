@@ -30,7 +30,7 @@ tasks:
   test-goquery:
     desc: Run the goquery prototype test script
     cmds:
-      - go test -v ./dev_tools -run TestGoquery
+      - go test -count=1 -v ./dev_tools -run TestGoquery
 
   qlty-all:
     desc: Run qlty check
@@ -45,14 +45,19 @@ tasks:
   docs:generate:
     desc: "Generate static GH Pages index.html for Swagger UI"
     cmds:
-      - go test -v ./dev_tools -run TestGenerateDocsUI
+      - go test -count=1 -v ./dev_tools -run TestGenerateDocsUI
 
   test-danbooru:
     desc: Run the Danbooru tags prototype test script
     cmds:
-      - go test -v ./dev_tools -run TestDanbooruTags
+      - go test -count=1 -v ./dev_tools -run TestDanbooruTags
 
   flush-cache:
     desc: Flush Redis cache via dev tools
     cmds:
-      - go test -v ./dev_tools -run TestFlushCache
+      - go test -count=1 -v ./dev_tools -run TestFlushCache
+
+  test-matoi:
+    desc: Run the comprehensive integration test for all Matoi providers
+    cmds:
+      - go test -count=1 -v ./dev_tools -run TestMatoi

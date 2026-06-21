@@ -147,9 +147,9 @@ Stack: Fiber v3, Redis (Keyv-equivalent caching), Swagger (swag + swaggerui).
 - Run them via `go test -v ./dev_tools -run TestSomething`.
 - **Taskfile Integration**: You MUST register a new task in `Taskfile.yml` for any test or utility script created in `dev_tools/` so it can be easily executed via the `task` CLI.
 
-## Mandatory Provider Implementation Checklist (The 3 Pillars)
+## Mandatory Provider Implementation Checklist (The 4 Pillars)
 
-Whenever an agent is tasked to add a new imageboard provider, they **MUST** fully implement these three phases before considering the task complete:
+Whenever an agent is tasked to add a new imageboard provider, they **MUST** fully implement these four phases before considering the task complete:
 
 1. **IMPLEMENT PROVIDERS (Core Fetch & Normalize)**
    - Create the upstream fetch logic in `providers/` handling the raw struct mapping.
@@ -164,6 +164,10 @@ Whenever an agent is tasked to add a new imageboard provider, they **MUST** full
    - Implement a `/api/provider/media?url=` proxy endpoint to bypass hotlink protection.
    - Create a `resolveMatoiURLs()` helper inside the handler.
    - Inject the resolved local proxy URLs into `matoi_file_url`, `matoi_preview_url`, and `matoi_sample_url` before returning the JSON payload.
+
+4. **UPDATE INTEGRATION TESTS (`matoi_test.go`)**
+   - The new provider MUST be registered in the `providers` array inside `dev_tools/matoi_test.go`.
+   - Ensure the provider is thoroughly covered by the `task test-matoi` command, verifying its REST endpoints, Query Completion, Media Proxy, and GraphQL integration.
 
 ## Common Commands
 
