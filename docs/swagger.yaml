@@ -80,7 +80,6 @@ info:
   contact: {}
   description: REST API wrapper/binding for imageboard APIs (Danbooru, Gelbooru, Rule34).
   title: Matoi API Wrapper
-  version: 1.0.2-alpha
 paths:
   /:
     get:
@@ -148,6 +147,8 @@ paths:
             additionalProperties:
               type: string
             type: object
+      security:
+      - ApiKeyAuth: []
       summary: Get posts from Rule34
       tags:
       - rule34
@@ -169,4 +170,11 @@ paths:
       summary: Ping the server
       tags:
       - system
+securityDefinitions:
+  ApiKeyAuth:
+    description: 'Provide the API key via the `api_key` query parameter or `Authorization:
+      Bearer <key>` header.'
+    in: query
+    name: api_key
+    type: apiKey
 swagger: "2.0"
