@@ -23,35 +23,75 @@ jobs:
       - name: Checkout
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
-          persist-credentials: false
-          fetch-depth: 2
+          persist-credentials: true # Needed to push tags
+          fetch-depth: 0
 
-      - name: Check if version changed
-        id: check
+      - name: Set release metadata
+        id: meta
         shell: bash
         run: |
-          # Extract the AppVersion from config.go using grep
-          NEW_VERSION=$(grep -oP 'var AppVersion = "\K[^"]+' config/config.go || echo "0.0.0")
-          OLD_VERSION=$(git show HEAD~1:config/config.go | grep -oP 'var AppVersion = "\K[^"]+' || echo "0.0.0")
-          
-          if [ "$NEW_VERSION" != "$OLD_VERSION" ]; then
-            echo "changed=true" >> $GITHUB_OUTPUT
-            echo "version=$NEW_VERSION" >> $GITHUB_OUTPUT
-            echo "Version changed from $OLD_VERSION to $NEW_VERSION"
+          VERSION=$(grep -oP 'var AppVersion = "\K[^"]+' config/config.go || echo "0.0.0")
+          echo "version=${VERSION}" >> "$GITHUB_OUTPUT"
+          echo "tag=v${VERSION}" >> "$GITHUB_OUTPUT"
+
+      - name: Check if tag already exists
+        id: tag_check
+        env:
+          TAG: ${{ steps.meta.outputs.tag }}
+        run: |
+          if git ls-remote --tags origin "refs/tags/$TAG" | grep -q "$TAG"; then
+            echo "exists=true" >> "$GITHUB_OUTPUT"
           else
-            echo "changed=false" >> $GITHUB_OUTPUT
-            echo "Version remains $NEW_VERSION"
+            echo "exists=false" >> "$GITHUB_OUTPUT"
           fi
 
+      - name: Generate Release Notes
+        if: steps.tag_check.outputs.exists == 'false'
+        id: changelog
+        env:
+          TAG: ${{ steps.meta.outputs.tag }}
+        run: |
+          git fetch --tags
+          PREV_TAG=$(git describe --tags --abbrev=0 HEAD^ 2>/dev/null || echo "")
+          REPO_URL="${{ github.server_url }}/${{ github.repository }}"
+          if [ -z "$PREV_TAG" ]; then
+            NOTES=$(git log --pretty=format:"* %s ([%h]($REPO_URL/commit/%H))" --no-merges)
+            COMPARE_URL="$REPO_URL/commit/HEAD"
+          else
+            NOTES=$(git log --pretty=format:"* %s ([%h]($REPO_URL/commit/%H))" $PREV_TAG..HEAD --no-merges)
+            COMPARE_URL="$REPO_URL/compare/$PREV_TAG...$TAG"
+          fi
+          # Handle multiline output safely for GITHUB_OUTPUT
+          {
+            echo 'notes<<EOF'
+            echo "$NOTES"
+            echo EOF
+          } >> "$GITHUB_OUTPUT"
+          echo "prev_tag=$PREV_TAG" >> "$GITHUB_OUTPUT"
+          echo "compare_url=$COMPARE_URL" >> "$GITHUB_OUTPUT"
+
+      - name: Create tag
+        if: steps.tag_check.outputs.exists == 'false'
+        env:
+          TAG: ${{ steps.meta.outputs.tag }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git tag "$TAG"
+          git push origin "$TAG"
+
       - name: Create GitHub release
-        if: steps.check.outputs.changed == 'true'
+        if: steps.tag_check.outputs.exists == 'false'
         uses: softprops/action-gh-release@c062e08bd532815e2082a85e87e3ef29c3e6d191 # v2.0.8
         with:
-          tag_name: ${{ steps.check.outputs.version }}
-          name: ${{ steps.check.outputs.version }}
-          target_commitish: master
-          generate_release_notes: true
+          tag_name: ${{ steps.meta.outputs.tag }}
+          name: ${{ steps.meta.outputs.tag }}
+          body: |
+            ## What's Changed
+            ${{ steps.changelog.outputs.notes }}
 
-      - name: Skip release log
-        if: steps.check.outputs.changed == 'false'
-        run: echo "No version change detected in config/config.go. Skipping release."
+            **Full Changelog**: ${{ steps.changelog.outputs.compare_url }}
+          target_commitish: master
+          make_latest: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
