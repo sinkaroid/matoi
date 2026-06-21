@@ -46,24 +46,32 @@ func TestMatoiAllProviders(t *testing.T) {
 	for _, p := range providers {
 		t.Run(p, func(t *testing.T) {
 			// 1. Post Test
-			postURL := fmt.Sprintf("%s/api/%s/posts?tags=yuri&page=1&limit=3", baseURL, p)
-			resp := doAuthRequest(t, "GET", postURL, nil)
-			if resp.StatusCode != 200 {
-				t.Fatalf("[%s] Post test failed with status %d", p, resp.StatusCode)
-			}
-			
-			body, _ := io.ReadAll(resp.Body)
-			resp.Body.Close()
-
 			var postsData PostsResponse
-			if err := json.Unmarshal(body, &postsData); err != nil {
-				t.Fatalf("[%s] Failed to parse JSON: %v", p, err)
+			var activeTag string
+			for _, tag := range []string{"yuri", "1girl", "bikini"} {
+				postURL := fmt.Sprintf("%s/api/%s/posts?tags=%s&page=1&limit=3", baseURL, p, tag)
+				resp := doAuthRequest(t, "GET", postURL, nil)
+				if resp.StatusCode == 200 {
+					body, _ := io.ReadAll(resp.Body)
+					resp.Body.Close()
+					if err := json.Unmarshal(body, &postsData); err == nil && len(postsData.Posts) > 0 {
+						activeTag = tag
+						break
+					}
+				} else if resp.StatusCode != 404 {
+					t.Fatalf("[%s] Post test failed with status %d", p, resp.StatusCode)
+				}
+				resp.Body.Close()
 			}
 			
-			t.Logf("[%s] Get Posts (Page 1) successful. Fetched %d posts.", p, len(postsData.Posts))
+			if activeTag == "" {
+				t.Fatalf("[%s] No posts found for tags yuri, 1girl, or bikini", p)
+			}
+			
+			t.Logf("[%s] Get Posts (Page 1) successful with tag '%s'. Fetched %d posts.", p, activeTag, len(postsData.Posts))
 
 			// Verify pagination by fetching Page 2
-			postURL2 := fmt.Sprintf("%s/api/%s/posts?tags=yuri&page=2&limit=3", baseURL, p)
+			postURL2 := fmt.Sprintf("%s/api/%s/posts?tags=%s&page=2&limit=3", baseURL, p, activeTag)
 			resp2 := doAuthRequest(t, "GET", postURL2, nil)
 			if resp2.StatusCode == 200 {
 				body2, _ := io.ReadAll(resp2.Body)
@@ -79,23 +87,19 @@ func TestMatoiAllProviders(t *testing.T) {
 				}
 			}
 
-			if len(postsData.Posts) == 0 {
-				t.Logf("[%s] Warning: No posts found for tags=yuri", p)
-			} else {
-				// 2. Media Test
-				mediaURL := postsData.Posts[0].MatoiFileURL
-				if mediaURL == "" {
-					t.Fatalf("[%s] matoi_file_url is empty in response", p)
-				}
-				
-				// Some Matoi proxy URLs might not require auth, but we send it just in case
-				mediaResp := doAuthRequest(t, "GET", mediaURL, nil)
-				defer mediaResp.Body.Close()
-				if mediaResp.StatusCode != 200 {
-					t.Fatalf("[%s] Media proxy test failed with status %d for URL: %s", p, mediaResp.StatusCode, mediaURL)
-				}
-				t.Logf("[%s] Media proxy successful for Matoi File URL: %s", p, mediaURL)
+			// 2. Media Test
+			mediaURL := postsData.Posts[0].MatoiFileURL
+			if mediaURL == "" {
+				t.Fatalf("[%s] matoi_file_url is empty in response", p)
 			}
+			
+			// Some Matoi proxy URLs might not require auth, but we send it just in case
+			mediaResp := doAuthRequest(t, "GET", mediaURL, nil)
+			defer mediaResp.Body.Close()
+			if mediaResp.StatusCode != 200 {
+				t.Fatalf("[%s] Media proxy test failed with status %d for URL: %s", p, mediaResp.StatusCode, mediaURL)
+			}
+			t.Logf("[%s] Media proxy successful for Matoi File URL: %s", p, mediaURL)
 
 			// 3. Query Completion Test
 			qcURL := fmt.Sprintf("%s/api/%s/query_completion?tags=jeanne", baseURL, p)
@@ -126,7 +130,15 @@ func TestMatoiGraphQLAllProviders(t *testing.T) {
 	for _, p := range providers {
 		queryStr += fmt.Sprintf(`
 			%s {
-				posts(tags: "yuri", limit: 3, page: 1) {
+				p1: posts(tags: "yuri", limit: 3, page: 1) {
+					id
+					matoi_file_url
+				}
+				p2: posts(tags: "1girl", limit: 3, page: 1) {
+					id
+					matoi_file_url
+				}
+				p3: posts(tags: "bikini", limit: 3, page: 1) {
 					id
 					matoi_file_url
 				}
@@ -184,12 +196,24 @@ func TestMatoiGraphQLAllProviders(t *testing.T) {
 			}
 
 			// Verify posts and media proxy
-			posts, ok := providerData["posts"].([]interface{})
-			if !ok || len(posts) == 0 {
-				t.Logf("[%s] Warning: No posts found for tags=yuri", p)
-				return
+			var posts []interface{}
+			var activeTag string
+			
+			if p1, ok := providerData["p1"].([]interface{}); ok && len(p1) > 0 {
+				posts = p1
+				activeTag = "yuri"
+			} else if p2, ok := providerData["p2"].([]interface{}); ok && len(p2) > 0 {
+				posts = p2
+				activeTag = "1girl"
+			} else if p3, ok := providerData["p3"].([]interface{}); ok && len(p3) > 0 {
+				posts = p3
+				activeTag = "bikini"
 			}
-			t.Logf("[%s] GraphQL Get Posts successful. Fetched %d posts.", p, len(posts))
+
+			if len(posts) == 0 {
+				t.Fatalf("[%s] Warning: No posts found for tags yuri, 1girl, or bikini", p)
+			}
+			t.Logf("[%s] GraphQL Get Posts successful with tag '%s'. Fetched %d posts.", p, activeTag, len(posts))
 
 			firstPost := posts[0].(map[string]interface{})
 			matoiFileURL, ok := firstPost["matoi_file_url"].(string)
