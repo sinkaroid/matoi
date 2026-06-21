@@ -1,0 +1,36 @@
+# Binaries and build artifacts
+bin/
+tmp/
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+
+# Local configuration / credentials
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Agent configuration / learning models
+.agent/
+
+# IDEs and Editors
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# OS-specific files
+Thumbs.db
+db.json
+.DS_Store
+
+# Project documentation to ignore
+PRD.md
+auto-commit.md

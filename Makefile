@@ -1,10 +1,15 @@
-.PHONY: run lint build
+GOPATH := $(shell go env GOPATH)
 
-run:
-	go run hello.go
+.PHONY: dev build prod lint
 
-lint:
-	golangci-lint run
+dev:
+	"$(GOPATH)/bin/air"
 
 build:
-	go build -o bin/hello.exe hello.go
+	go build -o bin/matoi.exe main.go
+
+prod: build
+	./bin/matoi.exe
+
+lint:
+	"$(GOPATH)/bin/golangci-lint" run
