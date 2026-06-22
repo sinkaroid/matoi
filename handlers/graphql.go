@@ -33,10 +33,11 @@ type GraphQLHandler struct {
 	konachanNetProvider *providers.KonachanNetProvider
 	e621Provider        *providers.E621Provider
 	e926Provider        *providers.E926Provider
+	furbooruProvider    *providers.FurbooruProvider
 }
 
 // NewGraphQLHandler initializes the GraphQL schema and returns the handler.
-func NewGraphQLHandler(cfg *config.Config, dan *providers.DanbooruProvider, gel *providers.GelbooruProvider, r34 *providers.Rule34Provider, tbib *providers.TbibProvider, xbooru *providers.XbooruProvider, hypnohub *providers.HypnohubProvider, safebooru *providers.SafebooruProvider, yandere *providers.YandereProvider, konachanCom *providers.KonachanComProvider, konachanNet *providers.KonachanNetProvider, e621 *providers.E621Provider, e926 *providers.E926Provider) *GraphQLHandler {
+func NewGraphQLHandler(cfg *config.Config, dan *providers.DanbooruProvider, gel *providers.GelbooruProvider, r34 *providers.Rule34Provider, tbib *providers.TbibProvider, xbooru *providers.XbooruProvider, hypnohub *providers.HypnohubProvider, safebooru *providers.SafebooruProvider, yandere *providers.YandereProvider, konachanCom *providers.KonachanComProvider, konachanNet *providers.KonachanNetProvider, e621 *providers.E621Provider, e926 *providers.E926Provider, furbooru *providers.FurbooruProvider) *GraphQLHandler {
 	h := &GraphQLHandler{
 		cfg:                 cfg,
 		danbooruProvider:    dan,
@@ -51,6 +52,7 @@ func NewGraphQLHandler(cfg *config.Config, dan *providers.DanbooruProvider, gel 
 		konachanNetProvider: konachanNet,
 		e621Provider:        e621,
 		e926Provider:        e926,
+		furbooruProvider:    furbooru,
 	}
 	h.initSchema()
 	return h
@@ -114,6 +116,7 @@ func (h *GraphQLHandler) initSchema() {
 	konachanNetType := createProviderType("KonachanNet", h.resolveKonachanNetPosts, h.resolveKonachanNetCompletion)
 	e621Type := createProviderType("E621", h.resolveE621Posts, h.resolveE621Completion)
 	e926Type := createProviderType("E926", h.resolveE926Posts, h.resolveE926Completion)
+	furbooruType := createProviderType("Furbooru", h.resolveFurbooruPosts, h.resolveFurbooruCompletion)
 
 	noopResolve := func(_ graphql.ResolveParams) (interface{}, error) { return struct{}{}, nil }
 
@@ -132,6 +135,7 @@ func (h *GraphQLHandler) initSchema() {
 			"konachan_net": &graphql.Field{Type: konachanNetType, Resolve: noopResolve},
 			"e621":         &graphql.Field{Type: e621Type, Resolve: noopResolve},
 			"e926":         &graphql.Field{Type: e926Type, Resolve: noopResolve},
+			"furbooru":     &graphql.Field{Type: furbooruType, Resolve: noopResolve},
 		},
 	})
 
@@ -535,4 +539,14 @@ func (h *GraphQLHandler) resolveE926Posts(p graphql.ResolveParams) (interface{},
 //nolint:gocritic // signature required
 func (h *GraphQLHandler) resolveE926Completion(p graphql.ResolveParams) (interface{}, error) {
 	return h.resolveGenericCompletion(p, h.e926Provider.QueryCompletion)
+}
+
+//nolint:gocritic // signature required
+func (h *GraphQLHandler) resolveFurbooruPosts(p graphql.ResolveParams) (interface{}, error) {
+	return h.resolveGenericPosts(p, "furbooru", h.furbooruProvider.FetchPosts)
+}
+
+//nolint:gocritic // signature required
+func (h *GraphQLHandler) resolveFurbooruCompletion(p graphql.ResolveParams) (interface{}, error) {
+	return h.resolveGenericCompletion(p, h.furbooruProvider.QueryCompletion)
 }
