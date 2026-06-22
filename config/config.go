@@ -19,36 +19,49 @@ var AppVersion = "8.0.0-alpha"
 
 // Config holds all the configuration variables for the application.
 type Config struct {
-	Port                 string
-	ResolverURL          string
-	UserAgent            string
-	EnableLogs           bool
-	EnableGraphQL        bool
-	APIKey               string
-	RedisURL             string
-	RedisExpireCache     time.Duration
-	DanbooruURL          string
-	DanbooruReturnLmt    int
-	DanbooruAPIID        string
-	DanbooruAPIKey       string
-	GelbooruURL          string
-	GelbooruReturnLmt    int
-	GelbooruAPIKey       string
-	GelbooruUserID       string
-	Rule34URL            string
-	Rule34ReturnLimit    string
-	Rule34APIID          string
-	Rule34APIKey         string
-	TbibURL              string
-	TbibReturnLimit      string
-	XbooruURL            string
-	XbooruReturnLimit    string
-	HypnohubURL          string
-	HypnohubReturnLimit  string
-	SafebooruURL         string
-	SafebooruReturnLimit string
-	YandereURL           string
-	YandereReturnLimit   string
+	Port                   string
+	ResolverURL            string
+	UserAgent              string
+	EnableLogs             bool
+	EnableGraphQL          bool
+	APIKey                 string
+	RedisURL               string
+	RedisExpireCache       time.Duration
+	DanbooruURL            string
+	DanbooruReturnLmt      int
+	DanbooruAPIID          string
+	DanbooruAPIKey         string
+	GelbooruURL            string
+	GelbooruReturnLmt      int
+	GelbooruAPIKey         string
+	GelbooruUserID         string
+	Rule34URL              string
+	Rule34ReturnLimit      string
+	Rule34APIID            string
+	Rule34APIKey           string
+	TbibURL                string
+	TbibReturnLimit        string
+	XbooruURL              string
+	XbooruReturnLimit      string
+	HypnohubURL            string
+	HypnohubReturnLimit    string
+	SafebooruURL           string
+	SafebooruReturnLimit   string
+	YandereURL             string
+	YandereReturnLimit     string
+	KonachanComURL         string
+	KonachanComReturnLimit string
+	KonachanNetURL         string
+	KonachanNetReturnLimit string
+	FlareSolverrURL        string
+}
+
+func getEnvWithDefault(key, fallback string) string {
+	val := os.Getenv(key)
+	if val == "" {
+		return fallback
+	}
+	return val
 }
 
 // LoadConfig loads the environment variables from .env or standard env variables, falling back to defaults if not set.
@@ -78,34 +91,14 @@ func LoadConfig() *Config {
 	}
 	redisExpire := time.Duration(expireMinutes) * time.Minute
 
-	rule34URL := os.Getenv("RULE34_URL")
-	if rule34URL == "" {
-		rule34URL = "https://api.rule34.xxx/index.php"
+	danbooruLimitVal := 100
+	if val, err := strconv.Atoi(getEnvWithDefault("DANBOORU_RETURN_LIMIT", "100")); err == nil && val > 0 {
+		danbooruLimitVal = val
 	}
 
-	rule34Limit := os.Getenv("RULE34_RETURN_LIMIT")
-	if rule34Limit == "" {
-		rule34Limit = "100"
-	}
-
-	tbibURL := os.Getenv("TBIB_URL")
-	if tbibURL == "" {
-		tbibURL = "https://tbib.org/index.php"
-	}
-
-	tbibLimit := os.Getenv("TBIB_RETURN_LIMIT")
-	if tbibLimit == "" {
-		tbibLimit = "100"
-	}
-
-	gelbooruURL := os.Getenv("GELBOORU_URL")
-	if gelbooruURL == "" {
-		gelbooruURL = "https://gelbooru.com/index.php"
-	}
-
-	gelbooruLimit := 100
-	if val, err := strconv.Atoi(os.Getenv("GELBOORU_RETURN_LIMIT")); err == nil && val > 0 {
-		gelbooruLimit = val
+	gelbooruLimitVal := 100
+	if val, err := strconv.Atoi(getEnvWithDefault("GELBOORU_RETURN_LIMIT", "100")); err == nil && val > 0 {
+		gelbooruLimitVal = val
 	}
 
 	userAgent := os.Getenv("USER_AGENT")
@@ -118,81 +111,63 @@ func LoadConfig() *Config {
 	enableGraphQL := strings.ToLower(strings.TrimSpace(os.Getenv("GRAPHQL"))) == "true"
 	apiKey := os.Getenv("API_KEY")
 
-	danbooruLimit := 100
-	if val, err := strconv.Atoi(os.Getenv("DANBOORU_RETURN_LIMIT")); err == nil && val > 0 {
-		danbooruLimit = val
-	}
+	danbooruLimit := danbooruLimitVal
+	gelbooruURL := getEnvWithDefault("GELBOORU_URL", "https://gelbooru.com/index.php")
+	gelbooruLimit := gelbooruLimitVal
+	rule34URL := getEnvWithDefault("RULE34_URL", "https://api.rule34.xxx/index.php")
+	rule34Limit := getEnvWithDefault("RULE34_RETURN_LIMIT", "100")
+	tbibURL := getEnvWithDefault("TBIB_URL", "https://tbib.org/index.php")
+	tbibLimit := getEnvWithDefault("TBIB_RETURN_LIMIT", "100")
+	xbooruURL := getEnvWithDefault("XBOORU_URL", "https://xbooru.com/index.php")
+	xbooruLimit := getEnvWithDefault("XBOORU_RETURN_LIMIT", "100")
+	hypnohubURL := getEnvWithDefault("HYPNOHUB_URL", "https://hypnohub.net/post.json")
+	hypnohubLimit := getEnvWithDefault("HYPNOHUB_RETURN_LIMIT", "100")
+	safebooruURL := getEnvWithDefault("SAFEBOORU_URL", "https://safebooru.org/index.php")
+	safebooruLimit := getEnvWithDefault("SAFEBOORU_RETURN_LIMIT", "100")
+	yandereURL := getEnvWithDefault("YANDERE_URL", "https://yande.re/post.json")
+	yandereLimit := getEnvWithDefault("YANDERE_RETURN_LIMIT", "100")
+	konachanComURL := getEnvWithDefault("KONACHANCOM_URL", "https://konachan.com/post.json")
+	konachanComLimit := getEnvWithDefault("KONACHANCOM_RETURN_LIMIT", "100")
+	konachanNetURL := getEnvWithDefault("KONACHANNET_URL", "https://konachan.net/post.json")
+	konachanNetLimit := getEnvWithDefault("KONACHANNET_RETURN_LIMIT", "100")
 
-	xbooruURL := os.Getenv("XBOORU_URL")
-	if xbooruURL == "" {
-		xbooruURL = "https://xbooru.com/index.php"
-	}
-
-	xbooruLimit := os.Getenv("XBOORU_RETURN_LIMIT")
-	if xbooruLimit == "" {
-		xbooruLimit = "100"
-	}
-
-	hypnohubURL := os.Getenv("HYPNOHUB_URL")
-	if hypnohubURL == "" {
-		hypnohubURL = "https://hypnohub.net/index.php"
-	}
-
-	hypnohubLimit := os.Getenv("HYPNOHUB_RETURN_LIMIT")
-	if hypnohubLimit == "" {
-		hypnohubLimit = "100"
-	}
-
-	safebooruURL := os.Getenv("SAFEBOORU_URL")
-	if safebooruURL == "" {
-		safebooruURL = "https://safebooru.org/index.php"
-	}
-
-	safebooruLimit := os.Getenv("SAFEBOORU_RETURN_LIMIT")
-	if safebooruLimit == "" {
-		safebooruLimit = "100"
-	}
-
-	yandereURL := os.Getenv("YANDERE_URL")
-	if yandereURL == "" {
-		yandereURL = "https://yande.re/post.json"
-	}
-
-	yandereLimit := os.Getenv("YANDERE_RETURN_LIMIT")
-	if yandereLimit == "" {
-		yandereLimit = "100"
-	}
+	flareSolverrURL := os.Getenv("FLARESOLVERR_URL")
 
 	return &Config{
-		Port:                 port,
-		ResolverURL:          os.Getenv("RESOLVER_URL"),
-		UserAgent:            userAgent,
-		EnableLogs:           enableLogs,
-		EnableGraphQL:        enableGraphQL,
-		APIKey:               apiKey,
-		RedisURL:             redisURL,
-		RedisExpireCache:     redisExpire,
-		DanbooruURL:          os.Getenv("DANBOORU_URL"),
-		DanbooruReturnLmt:    danbooruLimit,
-		DanbooruAPIID:        os.Getenv("DANBOORU_API_ID"),
-		DanbooruAPIKey:       os.Getenv("DANBOORU_API_KEY"),
-		GelbooruURL:          gelbooruURL,
-		GelbooruReturnLmt:    gelbooruLimit,
-		GelbooruAPIKey:       os.Getenv("GELBOORU_API_KEY"),
-		GelbooruUserID:       os.Getenv("GELBOORU_API_ID"),
-		Rule34URL:            rule34URL,
-		Rule34ReturnLimit:    rule34Limit,
-		Rule34APIID:          os.Getenv("RULE34_API_ID"),
-		Rule34APIKey:         os.Getenv("RULE34_API_KEY"),
-		TbibURL:              tbibURL,
-		TbibReturnLimit:      tbibLimit,
-		XbooruURL:            xbooruURL,
-		XbooruReturnLimit:    xbooruLimit,
-		HypnohubURL:          hypnohubURL,
-		HypnohubReturnLimit:  hypnohubLimit,
-		SafebooruURL:         safebooruURL,
-		SafebooruReturnLimit: safebooruLimit,
-		YandereURL:           yandereURL,
-		YandereReturnLimit:   yandereLimit,
+		Port:                   port,
+		ResolverURL:            os.Getenv("RESOLVER_URL"),
+		UserAgent:              userAgent,
+		EnableLogs:             enableLogs,
+		EnableGraphQL:          enableGraphQL,
+		APIKey:                 apiKey,
+		RedisURL:               redisURL,
+		RedisExpireCache:       redisExpire,
+		DanbooruURL:            os.Getenv("DANBOORU_URL"),
+		DanbooruReturnLmt:      danbooruLimit,
+		DanbooruAPIID:          os.Getenv("DANBOORU_API_ID"),
+		DanbooruAPIKey:         os.Getenv("DANBOORU_API_KEY"),
+		GelbooruURL:            gelbooruURL,
+		GelbooruReturnLmt:      gelbooruLimit,
+		GelbooruAPIKey:         os.Getenv("GELBOORU_API_KEY"),
+		GelbooruUserID:         os.Getenv("GELBOORU_API_ID"),
+		Rule34URL:              rule34URL,
+		Rule34ReturnLimit:      rule34Limit,
+		Rule34APIID:            os.Getenv("RULE34_API_ID"),
+		Rule34APIKey:           os.Getenv("RULE34_API_KEY"),
+		TbibURL:                tbibURL,
+		TbibReturnLimit:        tbibLimit,
+		XbooruURL:              xbooruURL,
+		XbooruReturnLimit:      xbooruLimit,
+		HypnohubURL:            hypnohubURL,
+		HypnohubReturnLimit:    hypnohubLimit,
+		SafebooruURL:           safebooruURL,
+		SafebooruReturnLimit:   safebooruLimit,
+		YandereURL:             yandereURL,
+		YandereReturnLimit:     yandereLimit,
+		KonachanComURL:         konachanComURL,
+		KonachanComReturnLimit: konachanComLimit,
+		KonachanNetURL:         konachanNetURL,
+		KonachanNetReturnLimit: konachanNetLimit,
+		FlareSolverrURL:        flareSolverrURL,
 	}
 }
