@@ -31,10 +31,12 @@ type GraphQLHandler struct {
 	yandereProvider     *providers.YandereProvider
 	konachanComProvider *providers.KonachanComProvider
 	konachanNetProvider *providers.KonachanNetProvider
+	e621Provider        *providers.E621Provider
+	e926Provider        *providers.E926Provider
 }
 
 // NewGraphQLHandler initializes the GraphQL schema and returns the handler.
-func NewGraphQLHandler(cfg *config.Config, dan *providers.DanbooruProvider, gel *providers.GelbooruProvider, r34 *providers.Rule34Provider, tbib *providers.TbibProvider, xbooru *providers.XbooruProvider, hypnohub *providers.HypnohubProvider, safebooru *providers.SafebooruProvider, yandere *providers.YandereProvider, konachanCom *providers.KonachanComProvider, konachanNet *providers.KonachanNetProvider) *GraphQLHandler {
+func NewGraphQLHandler(cfg *config.Config, dan *providers.DanbooruProvider, gel *providers.GelbooruProvider, r34 *providers.Rule34Provider, tbib *providers.TbibProvider, xbooru *providers.XbooruProvider, hypnohub *providers.HypnohubProvider, safebooru *providers.SafebooruProvider, yandere *providers.YandereProvider, konachanCom *providers.KonachanComProvider, konachanNet *providers.KonachanNetProvider, e621 *providers.E621Provider, e926 *providers.E926Provider) *GraphQLHandler {
 	h := &GraphQLHandler{
 		cfg:                 cfg,
 		danbooruProvider:    dan,
@@ -47,6 +49,8 @@ func NewGraphQLHandler(cfg *config.Config, dan *providers.DanbooruProvider, gel 
 		yandereProvider:     yandere,
 		konachanComProvider: konachanCom,
 		konachanNetProvider: konachanNet,
+		e621Provider:        e621,
+		e926Provider:        e926,
 	}
 	h.initSchema()
 	return h
@@ -108,6 +112,8 @@ func (h *GraphQLHandler) initSchema() {
 	yandereType := createProviderType("Yandere", h.resolveYanderePosts, h.resolveYandereCompletion)
 	konachanComType := createProviderType("KonachanCom", h.resolveKonachanComPosts, h.resolveKonachanComCompletion)
 	konachanNetType := createProviderType("KonachanNet", h.resolveKonachanNetPosts, h.resolveKonachanNetCompletion)
+	e621Type := createProviderType("E621", h.resolveE621Posts, h.resolveE621Completion)
+	e926Type := createProviderType("E926", h.resolveE926Posts, h.resolveE926Completion)
 
 	noopResolve := func(_ graphql.ResolveParams) (interface{}, error) { return struct{}{}, nil }
 
@@ -124,6 +130,8 @@ func (h *GraphQLHandler) initSchema() {
 			"yandere":      &graphql.Field{Type: yandereType, Resolve: noopResolve},
 			"konachan_com": &graphql.Field{Type: konachanComType, Resolve: noopResolve},
 			"konachan_net": &graphql.Field{Type: konachanNetType, Resolve: noopResolve},
+			"e621":         &graphql.Field{Type: e621Type, Resolve: noopResolve},
+			"e926":         &graphql.Field{Type: e926Type, Resolve: noopResolve},
 		},
 	})
 
@@ -507,4 +515,24 @@ func (h *GraphQLHandler) resolveKonachanNetPosts(p graphql.ResolveParams) (inter
 //nolint:gocritic // signature required
 func (h *GraphQLHandler) resolveKonachanNetCompletion(p graphql.ResolveParams) (interface{}, error) {
 	return h.resolveGenericCompletion(p, h.konachanNetProvider.QueryCompletion)
+}
+
+//nolint:gocritic // signature required
+func (h *GraphQLHandler) resolveE621Posts(p graphql.ResolveParams) (interface{}, error) {
+	return h.resolveGenericPosts(p, "e621", h.e621Provider.FetchPosts)
+}
+
+//nolint:gocritic // signature required
+func (h *GraphQLHandler) resolveE621Completion(p graphql.ResolveParams) (interface{}, error) {
+	return h.resolveGenericCompletion(p, h.e621Provider.QueryCompletion)
+}
+
+//nolint:gocritic // signature required
+func (h *GraphQLHandler) resolveE926Posts(p graphql.ResolveParams) (interface{}, error) {
+	return h.resolveGenericPosts(p, "e926", h.e926Provider.FetchPosts)
+}
+
+//nolint:gocritic // signature required
+func (h *GraphQLHandler) resolveE926Completion(p graphql.ResolveParams) (interface{}, error) {
+	return h.resolveGenericCompletion(p, h.e926Provider.QueryCompletion)
 }
