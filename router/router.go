@@ -17,6 +17,8 @@ func SetupRoutes(app *fiber.App, cfg *config.Config, rule34Handler *handlers.Rul
 	hypnohubHandler *handlers.HypnohubHandler,
 	safebooruHandler *handlers.SafebooruHandler,
 	yandereHandler *handlers.YandereHandler,
+	konachanComHandler *handlers.KonachanComHandler,
+	konachanNetHandler *handlers.KonachanNetHandler,
 	graphqlHandler *handlers.GraphQLHandler,
 ) {
 	// Enable CORS globally
@@ -55,6 +57,8 @@ func SetupRoutes(app *fiber.App, cfg *config.Config, rule34Handler *handlers.Rul
 	app.Get("/api/hypnohub/media", hypnohubHandler.ProxyMedia)
 	app.Get("/api/safebooru/media", safebooruHandler.ProxyMedia)
 	app.Get("/api/yandere/media", yandereHandler.ProxyMedia)
+	app.Get("/api/konachan_com/media", konachanComHandler.ProxyMedia)
+	app.Get("/api/konachan_net/media", konachanNetHandler.ProxyMedia)
 
 	// Protected API Group
 	api := app.Group("/api", authMiddleware)
@@ -90,6 +94,12 @@ func SetupRoutes(app *fiber.App, cfg *config.Config, rule34Handler *handlers.Rul
 	// Register Yandere protected endpoints
 	api.Get("/yandere/posts", yandereHandler.GetPosts)
 	api.Get("/yandere/query_completion", yandereHandler.QueryCompletion)
+
+	// Register Konachan protected endpoints
+	api.Get("/konachan_com/posts", konachanComHandler.GetPosts)
+	api.Get("/konachan_com/query_completion", konachanComHandler.QueryCompletion)
+	api.Get("/konachan_net/posts", konachanNetHandler.GetPosts)
+	api.Get("/konachan_net/query_completion", konachanNetHandler.QueryCompletion)
 
 	// Register GraphQL endpoints
 	if cfg.EnableGraphQL && graphqlHandler != nil {
