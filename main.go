@@ -15,6 +15,7 @@
 //	@tag.name		konachan_net
 //	@tag.name		e621
 //	@tag.name		e926
+//	@tag.name		furbooru
 //	@tag.name		system
 //	@BasePath		/
 //	@securityDefinitions.apikey ApiKeyAuth
@@ -77,6 +78,7 @@ func main() {
 	konachanNetProvider := providers.NewKonachanNetProvider(cfg)
 	e621Provider := providers.NewE621Provider(cfg)
 	e926Provider := providers.NewE926Provider(cfg)
+	furbooruProvider := providers.NewFurbooruProvider(cfg)
 
 	// Instantiate Handlers
 	rule34Handler := handlers.NewRule34Handler(rule34Provider)
@@ -91,10 +93,11 @@ func main() {
 	konachanNetHandler := handlers.NewKonachanNetHandler(konachanNetProvider)
 	e621Handler := handlers.NewE621Handler(e621Provider)
 	e926Handler := handlers.NewE926Handler(e926Provider)
+	furbooruHandler := handlers.NewFurbooruHandler(furbooruProvider)
 
 	var graphqlHandler *handlers.GraphQLHandler
 	if cfg.EnableGraphQL {
-		graphqlHandler = handlers.NewGraphQLHandler(cfg, danbooruProvider, gelbooruProvider, rule34Provider, tbibProvider, xbooruProvider, hypnohubProvider, safebooruProvider, yandereProvider, konachanComProvider, konachanNetProvider, e621Provider, e926Provider)
+		graphqlHandler = handlers.NewGraphQLHandler(cfg, danbooruProvider, gelbooruProvider, rule34Provider, tbibProvider, xbooruProvider, hypnohubProvider, safebooruProvider, yandereProvider, konachanComProvider, konachanNetProvider, e621Provider, e926Provider, furbooruProvider)
 	}
 
 	// Initialize Go Fiber app with a custom global error handler
@@ -118,7 +121,7 @@ func main() {
 	})
 
 	// Setup application routing with dependency injection
-	router.SetupRoutes(app, cfg, rule34Handler, danbooruHandler, gelbooruHandler, tbibHandler, xbooruHandler, hypnohubHandler, safebooruHandler, yandereHandler, konachanComHandler, konachanNetHandler, e621Handler, e926Handler, graphqlHandler)
+	router.SetupRoutes(app, cfg, rule34Handler, danbooruHandler, gelbooruHandler, tbibHandler, xbooruHandler, hypnohubHandler, safebooruHandler, yandereHandler, konachanComHandler, konachanNetHandler, e621Handler, e926Handler, furbooruHandler, graphqlHandler)
 
 	// Run Fiber server on configured port
 	log.Printf("Starting server on port %s", cfg.Port)
