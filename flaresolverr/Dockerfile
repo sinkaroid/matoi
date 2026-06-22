@@ -2,6 +2,8 @@
 FROM golang:1.22-alpine AS builder
 WORKDIR /app
 COPY memapi/ .
+# Initialize go module since we are compiling a directory package
+RUN go mod init memapi
 # Compile to a static binary without debug info to make it tiny (~2MB)
 RUN CGO_ENABLED=0 GOOS=linux go build -ldflags="-s -w" -o memapi .
 

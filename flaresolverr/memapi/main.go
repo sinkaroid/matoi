@@ -47,7 +47,7 @@ func handler(w http.ResponseWriter, r *http.Request) {
 		RSS:          rssStr,
 		Heap:         heapStr,
 		Uptime:       uptimeStr,
-		Modules:      cachedModules,
+		Modules:      getCachedModules(),
 	}
 
 	w.Header().Set("Content-Type", "application/json")

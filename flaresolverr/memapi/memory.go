@@ -7,33 +7,45 @@ import (
 	"strings"
 )
 
+func parseStat(pid int, parentMap map[int]int) {
+	statBytes, statErr := os.ReadFile(fmt.Sprintf("/proc/%d/stat", pid))
+	if statErr != nil {
+		return
+	}
+	statStr := string(statBytes)
+	rParen := strings.LastIndex(statStr, ")")
+	if rParen == -1 || len(statStr) <= rParen+2 {
+		return
+	}
+	fieldsAfter := strings.Fields(statStr[rParen+2:])
+	if len(fieldsAfter) >= 2 {
+		if ppid, errParse := strconv.Atoi(fieldsAfter[1]); errParse == nil {
+			parentMap[pid] = ppid
+		}
+	}
+}
+
+func parseStatm(pid int, rssMap map[int]int64, pageSize int64) {
+	statmBytes, statmErr := os.ReadFile(fmt.Sprintf("/proc/%d/statm", pid))
+	if statmErr != nil {
+		return
+	}
+	parts := strings.Fields(string(statmBytes))
+	if len(parts) >= 2 {
+		if rssPages, errParse := strconv.ParseInt(parts[1], 10, 64); errParse == nil {
+			rssMap[pid] = rssPages * pageSize
+		}
+	}
+}
+
 func processDir(f os.DirEntry, parentMap map[int]int, rssMap map[int]int64, pageSize int64) int {
 	pid, err := strconv.Atoi(f.Name())
 	if err != nil {
 		return 0
 	}
 
-	statBytes, statErr := os.ReadFile(fmt.Sprintf("/proc/%d/stat", pid))
-	if statErr == nil {
-		parts := strings.Fields(string(statBytes))
-		if len(parts) >= 4 {
-			ppid, errParse := strconv.Atoi(parts[3])
-			if errParse == nil {
-				parentMap[pid] = ppid
-			}
-		}
-	}
-
-	statmBytes, statmErr := os.ReadFile(fmt.Sprintf("/proc/%d/statm", pid))
-	if statmErr == nil {
-		parts := strings.Fields(string(statmBytes))
-		if len(parts) >= 2 {
-			rssPages, errParse := strconv.ParseInt(parts[1], 10, 64)
-			if errParse == nil {
-				rssMap[pid] = rssPages * pageSize
-			}
-		}
-	}
+	parseStat(pid, parentMap)
+	parseStatm(pid, rssMap, pageSize)
 
 	cmdBytes, readErr := os.ReadFile(fmt.Sprintf("/proc/%d/cmdline", pid))
 	if readErr == nil && strings.Contains(string(cmdBytes), "flaresolverr.py") {
