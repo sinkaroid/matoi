@@ -61,3 +61,13 @@ tasks:
     desc: Run the comprehensive integration test for all Matoi providers
     cmds:
       - go test -count=1 -v ./dev_tools -run TestMatoi
+
+  test-e621:
+    desc: Run the e621 prototype test script
+    cmds:
+      - go test -count=1 -v ./dev_tools -run TestE621QuickQuery
+
+  test-e926:
+    desc: Run the e926 prototype test script
+    cmds:
+      - go test -count=1 -v ./dev_tools -run TestE926QuickQuery
