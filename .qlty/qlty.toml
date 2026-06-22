@@ -64,7 +64,7 @@ threshold = 50
 threshold = 10
 
 [smells.function_parameters]
-threshold = 15
+threshold = 30
 
 [smells.function_complexity]
 threshold = 25
