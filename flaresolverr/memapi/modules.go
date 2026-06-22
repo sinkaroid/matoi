@@ -6,10 +6,14 @@ import (
 	"io"
 	"net/http"
 	"strings"
+	"sync"
 	"time"
 )
 
-var cachedModules []string
+var (
+	cachedModules []string
+	modulesMutex  sync.RWMutex
+)
 
 func init() {
 	go fetchModules()
@@ -21,13 +25,17 @@ func fetchModules() {
 
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, "https://raw.githubusercontent.com/FlareSolverr/FlareSolverr/refs/heads/master/requirements.txt", http.NoBody)
 	if err != nil {
+		modulesMutex.Lock()
 		cachedModules = []string{"error: failed to create request"}
+		modulesMutex.Unlock()
 		return
 	}
 
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
+		modulesMutex.Lock()
 		cachedModules = []string{"error: failed to fetch"}
+		modulesMutex.Unlock()
 		return
 	}
 	defer func() {
@@ -38,7 +46,9 @@ func fetchModules() {
 
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
+		modulesMutex.Lock()
 		cachedModules = []string{"error: failed to read"}
+		modulesMutex.Unlock()
 		return
 	}
 
@@ -50,5 +60,13 @@ func fetchModules() {
 			mods = append(mods, line)
 		}
 	}
+	modulesMutex.Lock()
 	cachedModules = mods
+	modulesMutex.Unlock()
+}
+
+func getCachedModules() []string {
+	modulesMutex.RLock()
+	defer modulesMutex.RUnlock()
+	return cachedModules
 }
