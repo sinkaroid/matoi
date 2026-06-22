@@ -13,6 +13,8 @@
 //	@tag.name		yandere
 //	@tag.name		konachan_com
 //	@tag.name		konachan_net
+//	@tag.name		e621
+//	@tag.name		e926
 //	@tag.name		system
 //	@BasePath		/
 //	@securityDefinitions.apikey ApiKeyAuth
@@ -73,6 +75,8 @@ func main() {
 	yandereProvider := providers.NewYandereProvider(cfg)
 	konachanComProvider := providers.NewKonachanComProvider(cfg)
 	konachanNetProvider := providers.NewKonachanNetProvider(cfg)
+	e621Provider := providers.NewE621Provider(cfg)
+	e926Provider := providers.NewE926Provider(cfg)
 
 	// Instantiate Handlers
 	rule34Handler := handlers.NewRule34Handler(rule34Provider)
@@ -85,10 +89,12 @@ func main() {
 	yandereHandler := handlers.NewYandereHandler(yandereProvider)
 	konachanComHandler := handlers.NewKonachanComHandler(konachanComProvider)
 	konachanNetHandler := handlers.NewKonachanNetHandler(konachanNetProvider)
+	e621Handler := handlers.NewE621Handler(e621Provider)
+	e926Handler := handlers.NewE926Handler(e926Provider)
 
 	var graphqlHandler *handlers.GraphQLHandler
 	if cfg.EnableGraphQL {
-		graphqlHandler = handlers.NewGraphQLHandler(cfg, danbooruProvider, gelbooruProvider, rule34Provider, tbibProvider, xbooruProvider, hypnohubProvider, safebooruProvider, yandereProvider, konachanComProvider, konachanNetProvider)
+		graphqlHandler = handlers.NewGraphQLHandler(cfg, danbooruProvider, gelbooruProvider, rule34Provider, tbibProvider, xbooruProvider, hypnohubProvider, safebooruProvider, yandereProvider, konachanComProvider, konachanNetProvider, e621Provider, e926Provider)
 	}
 
 	// Initialize Go Fiber app with a custom global error handler
@@ -112,7 +118,7 @@ func main() {
 	})
 
 	// Setup application routing with dependency injection
-	router.SetupRoutes(app, cfg, rule34Handler, danbooruHandler, gelbooruHandler, tbibHandler, xbooruHandler, hypnohubHandler, safebooruHandler, yandereHandler, konachanComHandler, konachanNetHandler, graphqlHandler)
+	router.SetupRoutes(app, cfg, rule34Handler, danbooruHandler, gelbooruHandler, tbibHandler, xbooruHandler, hypnohubHandler, safebooruHandler, yandereHandler, konachanComHandler, konachanNetHandler, e621Handler, e926Handler, graphqlHandler)
 
 	// Run Fiber server on configured port
 	log.Printf("Starting server on port %s", cfg.Port)

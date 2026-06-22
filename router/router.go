@@ -19,6 +19,8 @@ func SetupRoutes(app *fiber.App, cfg *config.Config, rule34Handler *handlers.Rul
 	yandereHandler *handlers.YandereHandler,
 	konachanComHandler *handlers.KonachanComHandler,
 	konachanNetHandler *handlers.KonachanNetHandler,
+	e621Handler *handlers.E621Handler,
+	e926Handler *handlers.E926Handler,
 	graphqlHandler *handlers.GraphQLHandler,
 ) {
 	// Enable CORS globally
@@ -59,6 +61,8 @@ func SetupRoutes(app *fiber.App, cfg *config.Config, rule34Handler *handlers.Rul
 	app.Get("/api/yandere/media", yandereHandler.ProxyMedia)
 	app.Get("/api/konachan_com/media", konachanComHandler.ProxyMedia)
 	app.Get("/api/konachan_net/media", konachanNetHandler.ProxyMedia)
+	app.Get("/api/e621/media", e621Handler.ProxyMedia)
+	app.Get("/api/e926/media", e926Handler.ProxyMedia)
 
 	// Protected API Group
 	api := app.Group("/api", authMiddleware)
@@ -100,6 +104,14 @@ func SetupRoutes(app *fiber.App, cfg *config.Config, rule34Handler *handlers.Rul
 	api.Get("/konachan_com/query_completion", konachanComHandler.QueryCompletion)
 	api.Get("/konachan_net/posts", konachanNetHandler.GetPosts)
 	api.Get("/konachan_net/query_completion", konachanNetHandler.QueryCompletion)
+
+	// Register E621 protected endpoints
+	api.Get("/e621/posts", e621Handler.GetPosts)
+	api.Get("/e621/query_completion", e621Handler.QueryCompletion)
+
+	// Register E926 protected endpoints
+	api.Get("/e926/posts", e926Handler.GetPosts)
+	api.Get("/e926/query_completion", e926Handler.QueryCompletion)
 
 	// Register GraphQL endpoints
 	if cfg.EnableGraphQL && graphqlHandler != nil {
