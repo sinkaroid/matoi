@@ -33,6 +33,7 @@ jobs:
             echo "changed=true" >> $GITHUB_OUTPUT
             echo "image_tag=$NEW_VERSION" >> $GITHUB_OUTPUT
             echo "image_name=ghcr.io/${GITHUB_REPOSITORY,,}" >> $GITHUB_OUTPUT
+            echo "owner_lower=${GITHUB_REPOSITORY_OWNER,,}" >> $GITHUB_OUTPUT
           else
             echo "changed=false" >> $GITHUB_OUTPUT
           fi
@@ -63,6 +64,20 @@ jobs:
           tags: |
             ${{ steps.check.outputs.image_name }}:${{ steps.check.outputs.image_tag }}
             ${{ steps.check.outputs.image_name }}:latest
+
+      - name: Build and push FlareSolverr image
+        if: steps.check.outputs.changed == 'true'
+        uses: docker/build-push-action@48aba3b46d1b1fec4febb7c5d0c644b249a11355 # v6.10.0
+        with:
+          context: ./flaresolverr
+          file: ./flaresolverr/Dockerfile
+          push: true
+          pull: true
+          provenance: false
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          tags: |
+            ghcr.io/${{ steps.check.outputs.owner_lower }}/flaresolverr:latest
 
       - name: Skip build log
         if: steps.check.outputs.changed == 'false'

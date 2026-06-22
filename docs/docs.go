@@ -508,6 +508,292 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/konachan_com/media": {
+            "get": {
+                "produces": [
+                    "*/*"
+                ],
+                "tags": [
+                    "konachan_com"
+                ],
+                "summary": "Proxy KonachanCom Media",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Direct media URL to proxy",
+                        "name": "url",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Image or Video file"
+                    },
+                    "400": {
+                        "description": "Missing or invalid URL",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "Failed to proxy media",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/konachan_com/posts": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "konachan_com"
+                ],
+                "summary": "Fetch KonachanCom Posts",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Tags to search for",
+                        "name": "tags",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Number of results (default 20, max 100)",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Page number (default 1)",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "boolean",
+                        "description": "Randomize the order of the results",
+                        "name": "shuffle",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            }
+        },
+        "/api/konachan_com/query_completion": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "konachan_com"
+                ],
+                "summary": "KonachanCom Tag Autocomplete",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Tag prefix to search",
+                        "name": "tags",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            }
+        },
+        "/api/konachan_net/media": {
+            "get": {
+                "produces": [
+                    "*/*"
+                ],
+                "tags": [
+                    "konachan_net"
+                ],
+                "summary": "Proxy KonachanNet Media",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Direct media URL to proxy",
+                        "name": "url",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Image or Video file"
+                    },
+                    "400": {
+                        "description": "Missing or invalid URL",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "Failed to proxy media",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/konachan_net/posts": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "konachan_net"
+                ],
+                "summary": "Fetch KonachanNet Posts",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Tags to search for",
+                        "name": "tags",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Number of results (default 20, max 100)",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Page number (default 1)",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "boolean",
+                        "description": "Randomize the order of the results",
+                        "name": "shuffle",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            }
+        },
+        "/api/konachan_net/query_completion": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "konachan_net"
+                ],
+                "summary": "KonachanNet Tag Autocomplete",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Tag prefix to search",
+                        "name": "tags",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            }
+        },
         "/api/rule34/media": {
             "get": {
                 "tags": [
@@ -1526,6 +1812,12 @@ const docTemplate = `{
         },
         {
             "name": "yandere"
+        },
+        {
+            "name": "konachan_com"
+        },
+        {
+            "name": "konachan_net"
         },
         {
             "name": "system"
