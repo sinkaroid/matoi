@@ -142,6 +142,13 @@ Stack: Fiber v3, Redis (Keyv-equivalent caching), Swagger (swag + swaggerui).
 - **Data Sanitization**: Ensure tags are fully sanitized (e.g., use `url.QueryUnescape` and `html.UnescapeString`) so HTML entities do not leak into the JSON response.
 - **NO-CACHE**: Due to past issues with empty results being permanently cached, `QueryCompletion` MUST NOT BE CACHED. Never use Redis for autocomplete responses. Fetch live data on every query.
 
+### Custom FlareSolverr (matoi-flaresolverr)
+- **Purpose**: Matoi uses a customized Docker image of FlareSolverr to accurately monitor Chrome/Selenium memory footprints. Standard `cgroup` metrics are highly inaccurate because they capture total container overhead, not just the isolated FlareSolverr process tree.
+- **Implementation**: The `flaresolverr/memapi` directory contains a high-performance Go sidecar API. It reads the raw Linux `/proc` filesystem to build a strict parent-child process tree mapping, calculating the exact RSS footprint of `flaresolverr.py` and its descendants.
+- **Endpoint**: The sidecar API runs on port `8192` (e.g., `GET /memory`) and returns JSON containing exact MB usage and dynamic module requirements fetched from the official repo.
+- **Build Process**: The custom image is built using a multi-stage `Dockerfile` located in `flaresolverr/Dockerfile`. Stage 1 compiles the Go binary statically, and Stage 2 layers it onto the official `ghcr.io/flaresolverr/flaresolverr:latest` image.
+- **CI/CD**: The `.github/workflows/dockerized.yml` pipeline automatically builds and pushes the image to `ghcr.io/sinkaroid/matoi-flaresolverr:latest` whenever changes occur.
+
 ### Dev Tools & Testing
 - **NO `func main()` in `dev_tools/`**: Never create standalone `package main` scripts inside the `dev_tools/` directory. This breaks `go build` and `go test` at the workspace level.
 - Always use standard Go test functions (e.g., `func TestSomething(t *testing.T)`) inside `*_test.go` files for prototypes and utility scripts.
