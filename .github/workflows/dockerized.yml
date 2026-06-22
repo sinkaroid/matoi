@@ -77,7 +77,7 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
           tags: |
-            ghcr.io/${{ steps.check.outputs.owner_lower }}/flaresolverr:latest
+            ghcr.io/${{ steps.check.outputs.owner_lower }}/matoi-flaresolverr:latest
 
       - name: Skip build log
         if: steps.check.outputs.changed == 'false'
