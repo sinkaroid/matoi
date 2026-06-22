@@ -11,9 +11,6 @@ import (
 // It supports passing the key via the "api_key" query parameter or the "Authorization: Bearer <key>" header.
 func RequireAPIKey(configuredKey string) fiber.Handler {
 	return func(c fiber.Ctx) error {
-		// If no key is configured in the environment, we can optionally bypass auth,
-		// but typically it's safer to either bypass or strict fail.
-		// For a developer-friendly setup, we'll bypass if it's completely empty.
 		if configuredKey == "" {
 			return c.Next()
 		}
