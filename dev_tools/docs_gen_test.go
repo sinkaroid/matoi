@@ -161,12 +161,12 @@ func TestGenerateDocsUI(t *testing.T) {
 	finalHTML := fmt.Sprintf(htmlTemplate, string(swaggerData))
 
 	// Ensure docs directory exists
-	if err := os.MkdirAll(docsDir, 0755); err != nil {
+	if err := os.MkdirAll(docsDir, 0o755); err != nil {
 		t.Fatalf("Failed to create docs directory: %v", err)
 	}
 
 	// Write the HTML content to docs/index.html
-	if err := os.WriteFile(indexPath, []byte(finalHTML), 0644); err != nil {
+	if err := os.WriteFile(indexPath, []byte(finalHTML), 0o644); err != nil {
 		t.Fatalf("Failed to write docs/index.html: %v", err)
 	}
 
