@@ -35,6 +35,9 @@ type Config struct {
 	E926ReturnLmt          int
 	E926APIID              string
 	E926APIKey             string
+	FurbooruURL            string
+	FurbooruReturnLmt      int
+	FurbooruAPIKey         string
 	DanbooruURL            string
 	DanbooruReturnLmt      int
 	DanbooruAPIID          string
@@ -114,6 +117,11 @@ func LoadConfig() *Config {
 		e926LimitVal = val
 	}
 
+	furbooruLimitVal := 100
+	if val, err := strconv.Atoi(getEnvWithDefault("FURBOORU_RETURN_LIMIT", "100")); err == nil && val > 0 {
+		furbooruLimitVal = val
+	}
+
 	gelbooruLimitVal := 100
 	if val, err := strconv.Atoi(getEnvWithDefault("GELBOORU_RETURN_LIMIT", "100")); err == nil && val > 0 {
 		gelbooruLimitVal = val
@@ -134,6 +142,9 @@ func LoadConfig() *Config {
 
 	e926URL := getEnvWithDefault("E926_URL", "https://e926.net/posts.json")
 	e926Limit := e926LimitVal
+
+	furbooruURL := getEnvWithDefault("FURBOORU_URL", "https://furbooru.org/api/v1")
+	furbooruLimit := furbooruLimitVal
 
 	danbooruLimit := danbooruLimitVal
 	gelbooruURL := getEnvWithDefault("GELBOORU_URL", "https://gelbooru.com/index.php")
@@ -174,6 +185,9 @@ func LoadConfig() *Config {
 		E926ReturnLmt:          e926Limit,
 		E926APIID:              os.Getenv("E926_API_ID"),
 		E926APIKey:             os.Getenv("E926_API_KEY"),
+		FurbooruURL:            furbooruURL,
+		FurbooruReturnLmt:      furbooruLimit,
+		FurbooruAPIKey:         os.Getenv("FURBOORU_API_KEY"),
 		DanbooruURL:            os.Getenv("DANBOORU_URL"),
 		DanbooruReturnLmt:      danbooruLimit,
 		DanbooruAPIID:          os.Getenv("DANBOORU_API_ID"),
