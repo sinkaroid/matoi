@@ -19,30 +19,34 @@ import (
 
 // GraphQLHandler manages the GraphQL schema and execution.
 type GraphQLHandler struct {
-	cfg               *config.Config
-	schema            graphql.Schema
-	danbooruProvider  *providers.DanbooruProvider
-	gelbooruProvider  *providers.GelbooruProvider
-	rule34Provider    *providers.Rule34Provider
-	tbibProvider      *providers.TbibProvider
-	xbooruProvider    *providers.XbooruProvider
-	hypnohubProvider  *providers.HypnohubProvider
-	safebooruProvider *providers.SafebooruProvider
-	yandereProvider   *providers.YandereProvider
+	cfg                 *config.Config
+	schema              graphql.Schema
+	danbooruProvider    *providers.DanbooruProvider
+	gelbooruProvider    *providers.GelbooruProvider
+	rule34Provider      *providers.Rule34Provider
+	tbibProvider        *providers.TbibProvider
+	xbooruProvider      *providers.XbooruProvider
+	hypnohubProvider    *providers.HypnohubProvider
+	safebooruProvider   *providers.SafebooruProvider
+	yandereProvider     *providers.YandereProvider
+	konachanComProvider *providers.KonachanComProvider
+	konachanNetProvider *providers.KonachanNetProvider
 }
 
 // NewGraphQLHandler initializes the GraphQL schema and returns the handler.
-func NewGraphQLHandler(cfg *config.Config, dan *providers.DanbooruProvider, gel *providers.GelbooruProvider, r34 *providers.Rule34Provider, tbib *providers.TbibProvider, xbooru *providers.XbooruProvider, hypnohub *providers.HypnohubProvider, safebooru *providers.SafebooruProvider, yandere *providers.YandereProvider) *GraphQLHandler {
+func NewGraphQLHandler(cfg *config.Config, dan *providers.DanbooruProvider, gel *providers.GelbooruProvider, r34 *providers.Rule34Provider, tbib *providers.TbibProvider, xbooru *providers.XbooruProvider, hypnohub *providers.HypnohubProvider, safebooru *providers.SafebooruProvider, yandere *providers.YandereProvider, konachanCom *providers.KonachanComProvider, konachanNet *providers.KonachanNetProvider) *GraphQLHandler {
 	h := &GraphQLHandler{
-		cfg:               cfg,
-		danbooruProvider:  dan,
-		gelbooruProvider:  gel,
-		rule34Provider:    r34,
-		tbibProvider:      tbib,
-		xbooruProvider:    xbooru,
-		hypnohubProvider:  hypnohub,
-		safebooruProvider: safebooru,
-		yandereProvider:   yandere,
+		cfg:                 cfg,
+		danbooruProvider:    dan,
+		gelbooruProvider:    gel,
+		rule34Provider:      r34,
+		tbibProvider:        tbib,
+		xbooruProvider:      xbooru,
+		hypnohubProvider:    hypnohub,
+		safebooruProvider:   safebooru,
+		yandereProvider:     yandere,
+		konachanComProvider: konachanCom,
+		konachanNetProvider: konachanNet,
 	}
 	h.initSchema()
 	return h
@@ -102,18 +106,24 @@ func (h *GraphQLHandler) initSchema() {
 	hypnohubType := createProviderType("Hypnohub", h.resolveHypnohubPosts, h.resolveHypnohubCompletion)
 	safebooruType := createProviderType("Safebooru", h.resolveSafebooruPosts, h.resolveSafebooruCompletion)
 	yandereType := createProviderType("Yandere", h.resolveYanderePosts, h.resolveYandereCompletion)
+	konachanComType := createProviderType("KonachanCom", h.resolveKonachanComPosts, h.resolveKonachanComCompletion)
+	konachanNetType := createProviderType("KonachanNet", h.resolveKonachanNetPosts, h.resolveKonachanNetCompletion)
+
+	noopResolve := func(_ graphql.ResolveParams) (interface{}, error) { return struct{}{}, nil }
 
 	queryType := graphql.NewObject(graphql.ObjectConfig{
 		Name: "Query",
 		Fields: graphql.Fields{
-			"danbooru":  &graphql.Field{Type: danbooruType, Resolve: func(_ graphql.ResolveParams) (interface{}, error) { return struct{}{}, nil }},
-			"gelbooru":  &graphql.Field{Type: gelbooruType, Resolve: func(_ graphql.ResolveParams) (interface{}, error) { return struct{}{}, nil }},
-			"rule34":    &graphql.Field{Type: rule34Type, Resolve: func(_ graphql.ResolveParams) (interface{}, error) { return struct{}{}, nil }},
-			"tbib":      &graphql.Field{Type: tbibType, Resolve: func(_ graphql.ResolveParams) (interface{}, error) { return struct{}{}, nil }},
-			"xbooru":    &graphql.Field{Type: xbooruType, Resolve: func(_ graphql.ResolveParams) (interface{}, error) { return struct{}{}, nil }},
-			"hypnohub":  &graphql.Field{Type: hypnohubType, Resolve: func(_ graphql.ResolveParams) (interface{}, error) { return struct{}{}, nil }},
-			"safebooru": &graphql.Field{Type: safebooruType, Resolve: func(_ graphql.ResolveParams) (interface{}, error) { return struct{}{}, nil }},
-			"yandere":   &graphql.Field{Type: yandereType, Resolve: func(_ graphql.ResolveParams) (interface{}, error) { return struct{}{}, nil }},
+			"danbooru":     &graphql.Field{Type: danbooruType, Resolve: noopResolve},
+			"gelbooru":     &graphql.Field{Type: gelbooruType, Resolve: noopResolve},
+			"rule34":       &graphql.Field{Type: rule34Type, Resolve: noopResolve},
+			"tbib":         &graphql.Field{Type: tbibType, Resolve: noopResolve},
+			"xbooru":       &graphql.Field{Type: xbooruType, Resolve: noopResolve},
+			"hypnohub":     &graphql.Field{Type: hypnohubType, Resolve: noopResolve},
+			"safebooru":    &graphql.Field{Type: safebooruType, Resolve: noopResolve},
+			"yandere":      &graphql.Field{Type: yandereType, Resolve: noopResolve},
+			"konachan_com": &graphql.Field{Type: konachanComType, Resolve: noopResolve},
+			"konachan_net": &graphql.Field{Type: konachanNetType, Resolve: noopResolve},
 		},
 	})
 
@@ -477,4 +487,24 @@ func (h *GraphQLHandler) resolveYanderePosts(p graphql.ResolveParams) (interface
 //nolint:gocritic // signature required
 func (h *GraphQLHandler) resolveYandereCompletion(p graphql.ResolveParams) (interface{}, error) {
 	return h.resolveGenericCompletion(p, h.yandereProvider.QueryCompletion)
+}
+
+//nolint:gocritic // signature required
+func (h *GraphQLHandler) resolveKonachanComPosts(p graphql.ResolveParams) (interface{}, error) {
+	return h.resolveGenericPosts(p, "konachan_com", h.konachanComProvider.FetchPosts)
+}
+
+//nolint:gocritic // signature required
+func (h *GraphQLHandler) resolveKonachanComCompletion(p graphql.ResolveParams) (interface{}, error) {
+	return h.resolveGenericCompletion(p, h.konachanComProvider.QueryCompletion)
+}
+
+//nolint:gocritic // signature required
+func (h *GraphQLHandler) resolveKonachanNetPosts(p graphql.ResolveParams) (interface{}, error) {
+	return h.resolveGenericPosts(p, "konachan_net", h.konachanNetProvider.FetchPosts)
+}
+
+//nolint:gocritic // signature required
+func (h *GraphQLHandler) resolveKonachanNetCompletion(p graphql.ResolveParams) (interface{}, error) {
+	return h.resolveGenericCompletion(p, h.konachanNetProvider.QueryCompletion)
 }
