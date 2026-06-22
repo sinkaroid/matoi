@@ -21,6 +21,7 @@ func SetupRoutes(app *fiber.App, cfg *config.Config, rule34Handler *handlers.Rul
 	konachanNetHandler *handlers.KonachanNetHandler,
 	e621Handler *handlers.E621Handler,
 	e926Handler *handlers.E926Handler,
+	furbooruHandler *handlers.FurbooruHandler,
 	graphqlHandler *handlers.GraphQLHandler,
 ) {
 	// Enable CORS globally
@@ -63,6 +64,7 @@ func SetupRoutes(app *fiber.App, cfg *config.Config, rule34Handler *handlers.Rul
 	app.Get("/api/konachan_net/media", konachanNetHandler.ProxyMedia)
 	app.Get("/api/e621/media", e621Handler.ProxyMedia)
 	app.Get("/api/e926/media", e926Handler.ProxyMedia)
+	app.Get("/api/furbooru/media", furbooruHandler.ProxyMedia)
 
 	// Protected API Group
 	api := app.Group("/api", authMiddleware)
@@ -112,6 +114,10 @@ func SetupRoutes(app *fiber.App, cfg *config.Config, rule34Handler *handlers.Rul
 	// Register E926 protected endpoints
 	api.Get("/e926/posts", e926Handler.GetPosts)
 	api.Get("/e926/query_completion", e926Handler.QueryCompletion)
+
+	// Register Furbooru protected endpoints
+	api.Get("/furbooru/posts", furbooruHandler.GetPosts)
+	api.Get("/furbooru/query_completion", furbooruHandler.QueryCompletion)
 
 	// Register GraphQL endpoints
 	if cfg.EnableGraphQL && graphqlHandler != nil {
