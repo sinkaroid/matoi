@@ -15,7 +15,7 @@ import (
 
 // AppVersion defines the current version of the application.
 // Can be overridden at build time using -ldflags="-X 'matoi/config.AppVersion=xxx'"
-var AppVersion = "10.2.0-alpha"
+var AppVersion = "10.2.1-alpha"
 
 // Config holds all the configuration variables for the application.
 type Config struct {
