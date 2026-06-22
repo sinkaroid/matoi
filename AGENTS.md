@@ -56,7 +56,7 @@ Stack: Fiber v3, Redis (Keyv-equivalent caching), Swagger (swag + swaggerui).
 - Always back claims with official docs or source code — no guessing
 - If unsure, say so explicitly rather than hallucinating behavior
 - All code must compile — do not leave placeholder stubs that break `go build`
-- **MUST RUN LINT AFTER MAKING CHANGES** — run `task lint` and fix any formatting/linting errors.
+- MUST RUN LINT & QLTY AFTER MAKING CHANGES — must always run `task lint` => (if needed `task lint-fix` / format manually) => `task qlty-smells` => `task qlty-all` if making changes to ensure zero code smells and zero formatting errors.
 
 
 ### Swagger & GitHub Pages Docs

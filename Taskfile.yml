@@ -68,6 +68,11 @@ tasks:
       - go test -count=1 -v ./dev_tools -run TestE621QuickQuery
 
   test-e926:
-    desc: Run the e926 prototype test script
+    desc: Run integration tests for the E926 provider
     cmds:
-      - go test -count=1 -v ./dev_tools -run TestE926QuickQuery
+      - go test -count=1 -v ./dev_tools -run TestE926
+
+  test-furbooru:
+    desc: Run prototype test for the Furbooru provider
+    cmds:
+      - go test -count=1 -v ./dev_tools -run TestFurbooruPrototype
