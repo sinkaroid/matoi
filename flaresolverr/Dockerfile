@@ -21,6 +21,6 @@ ENV HEADLESS=true
 # Expose standard FlareSolverr port and our new Memory API port
 EXPOSE 8191 8192
 
-# Run the Go memory API in the background, then execute the original FlareSolverr entrypoint/cmd
-# The original FlareSolverr runs: /usr/bin/dumb-init -- xvfb-run -s "-screen 0 1920x1080x24 -cc 4 -nolisten tcp -dpi 96 +extension RANDR" python -u /app/src/flaresolverr.py
-CMD ["sh", "-c", "/app/memapi & exec /usr/bin/dumb-init -- xvfb-run -s \"-screen 0 1920x1080x24 -cc 4 -nolisten tcp -dpi 96 +extension RANDR\" python -u /app/src/flaresolverr.py"]
+# Run the Go memory API in the background, then execute the original FlareSolverr entrypoint
+# The official image uses ENTRYPOINT ["/usr/bin/dumb-init", "--"]
+CMD ["sh", "-c", "/app/memapi & exec /usr/local/bin/python -u /app/flaresolverr.py"]

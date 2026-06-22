@@ -56,8 +56,13 @@ func processDir(f os.DirEntry, parentMap map[int]int, rssMap map[int]int64, page
 
 func calculateDescendantRSS(flaresolverrPID int, parentMap map[int]int, rssMap map[int]int64) int64 {
 	var totalRSS int64
-	var isDescendant func(pid int) bool
-	isDescendant = func(pid int) bool {
+	myPID := os.Getpid()
+
+	var isDescendant func(pid, depth int) bool
+	isDescendant = func(pid, depth int) bool {
+		if depth > 100 {
+			return false // Prevent infinite recursion from /proc race condition cycles
+		}
 		if pid == flaresolverrPID {
 			return true
 		}
@@ -65,11 +70,14 @@ func calculateDescendantRSS(flaresolverrPID int, parentMap map[int]int, rssMap m
 		if !exists || ppid == 0 {
 			return false
 		}
-		return isDescendant(ppid)
+		return isDescendant(ppid, depth+1)
 	}
 
 	for pid, rss := range rssMap {
-		if isDescendant(pid) {
+		if pid == myPID {
+			continue // Strict isolation: do not count our own sidecar memory
+		}
+		if isDescendant(pid, 0) {
 			totalRSS += rss
 		}
 	}
