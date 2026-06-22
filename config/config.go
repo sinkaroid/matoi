@@ -27,6 +27,14 @@ type Config struct {
 	APIKey                 string
 	RedisURL               string
 	RedisExpireCache       time.Duration
+	E621URL                string
+	E621ReturnLmt          int
+	E621APIID              string
+	E621APIKey             string
+	E926URL                string
+	E926ReturnLmt          int
+	E926APIID              string
+	E926APIKey             string
 	DanbooruURL            string
 	DanbooruReturnLmt      int
 	DanbooruAPIID          string
@@ -96,6 +104,16 @@ func LoadConfig() *Config {
 		danbooruLimitVal = val
 	}
 
+	e621LimitVal := 100
+	if val, err := strconv.Atoi(getEnvWithDefault("E621_RETURN_LIMIT", "100")); err == nil && val > 0 {
+		e621LimitVal = val
+	}
+
+	e926LimitVal := 100
+	if val, err := strconv.Atoi(getEnvWithDefault("E926_RETURN_LIMIT", "100")); err == nil && val > 0 {
+		e926LimitVal = val
+	}
+
 	gelbooruLimitVal := 100
 	if val, err := strconv.Atoi(getEnvWithDefault("GELBOORU_RETURN_LIMIT", "100")); err == nil && val > 0 {
 		gelbooruLimitVal = val
@@ -110,6 +128,12 @@ func LoadConfig() *Config {
 	enableLogs := strings.ToLower(strings.TrimSpace(os.Getenv("ENABLE_LOGS"))) == "true"
 	enableGraphQL := strings.ToLower(strings.TrimSpace(os.Getenv("GRAPHQL"))) == "true"
 	apiKey := os.Getenv("API_KEY")
+
+	e621URL := getEnvWithDefault("E621_URL", "https://e621.net/posts.json")
+	e621Limit := e621LimitVal
+
+	e926URL := getEnvWithDefault("E926_URL", "https://e926.net/posts.json")
+	e926Limit := e926LimitVal
 
 	danbooruLimit := danbooruLimitVal
 	gelbooruURL := getEnvWithDefault("GELBOORU_URL", "https://gelbooru.com/index.php")
@@ -142,6 +166,14 @@ func LoadConfig() *Config {
 		APIKey:                 apiKey,
 		RedisURL:               redisURL,
 		RedisExpireCache:       redisExpire,
+		E621URL:                e621URL,
+		E621ReturnLmt:          e621Limit,
+		E621APIID:              os.Getenv("E621_API_ID"),
+		E621APIKey:             os.Getenv("E621_API_KEY"),
+		E926URL:                e926URL,
+		E926ReturnLmt:          e926Limit,
+		E926APIID:              os.Getenv("E926_API_ID"),
+		E926APIKey:             os.Getenv("E926_API_KEY"),
 		DanbooruURL:            os.Getenv("DANBOORU_URL"),
 		DanbooruReturnLmt:      danbooruLimit,
 		DanbooruAPIID:          os.Getenv("DANBOORU_API_ID"),
