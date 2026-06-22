@@ -13,6 +13,32 @@ definitions:
       success:
         type: boolean
     type: object
+  handlers.E621Response:
+    properties:
+      count:
+        type: integer
+      posts:
+        items:
+          $ref: '#/definitions/models.Post'
+        type: array
+      provider:
+        type: string
+      success:
+        type: boolean
+    type: object
+  handlers.E926Response:
+    properties:
+      count:
+        type: integer
+      posts:
+        items:
+          $ref: '#/definitions/models.Post'
+        type: array
+      provider:
+        type: string
+      success:
+        type: boolean
+    type: object
   handlers.GelbooruResponse:
     properties:
       count:
@@ -251,6 +277,192 @@ paths:
       summary: Danbooru Tag Autocomplete
       tags:
       - danbooru
+  /api/e621/media:
+    get:
+      parameters:
+      - description: Encoded E621 media URL
+        in: query
+        name: url
+        required: true
+        type: string
+      responses:
+        "200":
+          description: Streams the media file
+        "400":
+          description: Invalid parameters
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "502":
+          description: Failed to fetch media
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Proxy and stream E621 media
+      tags:
+      - e621
+  /api/e621/posts:
+    get:
+      description: Fetches a list of posts from E621 based on provided tags.
+      parameters:
+      - description: Tags to search for
+        in: query
+        name: tags
+        type: string
+      - description: Max results (default 100)
+        in: query
+        name: limit
+        type: integer
+      - description: Page number (default 1)
+        in: query
+        name: page
+        type: integer
+      - description: Shuffle the results
+        in: query
+        name: shuffle
+        type: boolean
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.E621Response'
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - ApiKeyAuth: []
+      summary: Fetch posts from E621
+      tags:
+      - e621
+  /api/e621/query_completion:
+    get:
+      description: Provides tag completion via tags.json. NO CACHE.
+      parameters:
+      - description: Tag prefix to search for
+        in: query
+        name: tags
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.QueryCompletionResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/main.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/main.ErrorResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: E621 Tag Autocomplete
+      tags:
+      - e621
+  /api/e926/media:
+    get:
+      parameters:
+      - description: Encoded E926 media URL
+        in: query
+        name: url
+        required: true
+        type: string
+      responses:
+        "200":
+          description: Streams the media file
+        "400":
+          description: Invalid parameters
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "502":
+          description: Failed to fetch media
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Proxy and stream E926 media
+      tags:
+      - e926
+  /api/e926/posts:
+    get:
+      description: Fetches a list of posts from E926 based on provided tags.
+      parameters:
+      - description: Tags to search for
+        in: query
+        name: tags
+        type: string
+      - description: Max results (default 100)
+        in: query
+        name: limit
+        type: integer
+      - description: Page number (default 1)
+        in: query
+        name: page
+        type: integer
+      - description: Shuffle the results
+        in: query
+        name: shuffle
+        type: boolean
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.E926Response'
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - ApiKeyAuth: []
+      summary: Fetch posts from E926
+      tags:
+      - e926
+  /api/e926/query_completion:
+    get:
+      description: Provides tag completion via tags.json. NO CACHE.
+      parameters:
+      - description: Tag prefix to search for
+        in: query
+        name: tags
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.QueryCompletionResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/main.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/main.ErrorResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: E926 Tag Autocomplete
+      tags:
+      - e926
   /api/gelbooru/media:
     get:
       parameters:
@@ -1155,4 +1367,6 @@ tags:
 - name: yandere
 - name: konachan_com
 - name: konachan_net
+- name: e621
+- name: e926
 - name: system
