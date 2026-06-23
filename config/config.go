@@ -38,6 +38,9 @@ type Config struct {
 	FurbooruURL            string
 	FurbooruReturnLmt      int
 	FurbooruAPIKey         string
+	DerpibooruURL          string
+	DerpibooruReturnLmt    int
+	DerpibooruAPIKey       string
 	DanbooruURL            string
 	DanbooruReturnLmt      int
 	DanbooruAPIID          string
@@ -122,6 +125,11 @@ func LoadConfig() *Config {
 		furbooruLimitVal = val
 	}
 
+	derpibooruLimitVal := 100
+	if val, err := strconv.Atoi(getEnvWithDefault("DERPIBOORU_RETURN_LIMIT", "100")); err == nil && val > 0 {
+		derpibooruLimitVal = val
+	}
+
 	gelbooruLimitVal := 100
 	if val, err := strconv.Atoi(getEnvWithDefault("GELBOORU_RETURN_LIMIT", "100")); err == nil && val > 0 {
 		gelbooruLimitVal = val
@@ -145,6 +153,9 @@ func LoadConfig() *Config {
 
 	furbooruURL := getEnvWithDefault("FURBOORU_URL", "https://furbooru.org/api/v1")
 	furbooruLimit := furbooruLimitVal
+
+	derpibooruURL := getEnvWithDefault("DERPIBOORU_URL", "https://derpibooru.org/api/v1")
+	derpibooruLimit := derpibooruLimitVal
 
 	danbooruLimit := danbooruLimitVal
 	gelbooruURL := getEnvWithDefault("GELBOORU_URL", "https://gelbooru.com/index.php")
@@ -188,6 +199,9 @@ func LoadConfig() *Config {
 		FurbooruURL:            furbooruURL,
 		FurbooruReturnLmt:      furbooruLimit,
 		FurbooruAPIKey:         os.Getenv("FURBOORU_API_KEY"),
+		DerpibooruURL:          derpibooruURL,
+		DerpibooruReturnLmt:    derpibooruLimit,
+		DerpibooruAPIKey:       os.Getenv("DERPIBOORU_API_KEY"),
 		DanbooruURL:            os.Getenv("DANBOORU_URL"),
 		DanbooruReturnLmt:      danbooruLimit,
 		DanbooruAPIID:          os.Getenv("DANBOORU_API_ID"),
