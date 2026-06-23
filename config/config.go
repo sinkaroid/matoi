@@ -68,6 +68,8 @@ type Config struct {
 	KonachanNetURL         string
 	KonachanNetReturnLimit string
 	FlareSolverrURL        string
+	RealbooruURL           string
+	RealbooruReturnLimit   int
 }
 
 func getEnvWithDefault(key, fallback string) string {
@@ -135,6 +137,11 @@ func LoadConfig() *Config {
 		gelbooruLimitVal = val
 	}
 
+	realbooruLimitVal := 42
+	if val, err := strconv.Atoi(getEnvWithDefault("REALBOORU_RETURN_LIMIT", "42")); err == nil && val > 0 {
+		realbooruLimitVal = val
+	}
+
 	userAgent := os.Getenv("USER_AGENT")
 	if userAgent == "" {
 		// Provide a safe default if not set
@@ -176,6 +183,8 @@ func LoadConfig() *Config {
 	konachanComLimit := getEnvWithDefault("KONACHANCOM_RETURN_LIMIT", "100")
 	konachanNetURL := getEnvWithDefault("KONACHANNET_URL", "https://konachan.net/post.json")
 	konachanNetLimit := getEnvWithDefault("KONACHANNET_RETURN_LIMIT", "100")
+	realbooruURL := getEnvWithDefault("REALBOORU_URL", "https://realbooru.com/index.php")
+	realbooruLimit := realbooruLimitVal
 
 	flareSolverrURL := os.Getenv("FLARESOLVERR_URL")
 
@@ -229,5 +238,7 @@ func LoadConfig() *Config {
 		KonachanNetURL:         konachanNetURL,
 		KonachanNetReturnLimit: konachanNetLimit,
 		FlareSolverrURL:        flareSolverrURL,
+		RealbooruURL:           realbooruURL,
+		RealbooruReturnLimit:   realbooruLimit,
 	}
 }
