@@ -15,7 +15,7 @@
 
 ---
 
-<a href="http://localhost:3000"><img align="right" src="resources/project/images/sinkaroid-matoi.png" width="370"></a>
+<a href="http://localhost:3000"><img align="right" src="resources/project/images/sinkaroid-matoi.png" width="390"></a>
 
 - [sinkaroid/matoi](#)
   - [The problem](#the-problem)
