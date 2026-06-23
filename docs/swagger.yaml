@@ -1069,6 +1069,118 @@ paths:
       summary: KonachanNet Tag Autocomplete
       tags:
       - konachan_net
+  /api/realbooru/media:
+    get:
+      description: Proxies a media URL through the server, attaching required referer
+        headers.
+      parameters:
+      - description: URL of the media to proxy
+        in: query
+        name: url
+        required: true
+        type: string
+      produces:
+      - application/octet-stream
+      responses:
+        "200":
+          description: Media content
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Proxy media to bypass Realbooru hotlink protection
+      tags:
+      - realbooru
+  /api/realbooru/posts:
+    get:
+      description: Fetches a list of posts from Realbooru using the provided tags,
+        limit, and page.
+      parameters:
+      - description: Space-separated list of tags to search for
+        in: query
+        name: tags
+        type: string
+      - description: Number of posts to return (default is configured limit)
+        in: query
+        name: limit
+        type: integer
+      - description: Page number (1-indexed, default is 1)
+        in: query
+        name: page
+        type: integer
+      - description: Shuffle the posts randomly
+        in: query
+        name: shuffle
+        type: boolean
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - ApiKeyAuth: []
+      summary: Fetch posts from Realbooru
+      tags:
+      - realbooru
+  /api/realbooru/query_completion:
+    get:
+      description: Fetches tag autocomplete suggestions from Realbooru based on the
+        query. NO CACHE.
+      parameters:
+      - description: Tag query to autocomplete
+        in: query
+        name: tags
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - ApiKeyAuth: []
+      summary: Fetch tag autocompletions from Realbooru
+      tags:
+      - realbooru
   /api/rule34/media:
     get:
       parameters:
@@ -1583,4 +1695,5 @@ tags:
 - name: e926
 - name: furbooru
 - name: derpibooru
+- name: realbooru
 - name: system

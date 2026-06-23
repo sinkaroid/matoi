@@ -1378,6 +1378,171 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/realbooru/media": {
+            "get": {
+                "description": "Proxies a media URL through the server, attaching required referer headers.",
+                "produces": [
+                    "application/octet-stream"
+                ],
+                "tags": [
+                    "realbooru"
+                ],
+                "summary": "Proxy media to bypass Realbooru hotlink protection",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "URL of the media to proxy",
+                        "name": "url",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Media content",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            }
+        },
+        "/api/realbooru/posts": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Fetches a list of posts from Realbooru using the provided tags, limit, and page.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "realbooru"
+                ],
+                "summary": "Fetch posts from Realbooru",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Space-separated list of tags to search for",
+                        "name": "tags",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Number of posts to return (default is configured limit)",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Page number (1-indexed, default is 1)",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "boolean",
+                        "description": "Shuffle the posts randomly",
+                        "name": "shuffle",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            }
+        },
+        "/api/realbooru/query_completion": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Fetches tag autocomplete suggestions from Realbooru based on the query. NO CACHE.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "realbooru"
+                ],
+                "summary": "Fetch tag autocompletions from Realbooru",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Tag query to autocomplete",
+                        "name": "tags",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            }
+        },
         "/api/rule34/media": {
             "get": {
                 "tags": [
@@ -2494,6 +2659,9 @@ const docTemplate = `{
         },
         {
             "name": "derpibooru"
+        },
+        {
+            "name": "realbooru"
         },
         {
             "name": "system"
