@@ -14,7 +14,7 @@ const (
 	apiKey  = "matoi"
 )
 
-var providers = []string{"rule34", "danbooru", "gelbooru", "tbib", "xbooru", "hypnohub", "safebooru", "yandere", "konachan_com", "konachan_net", "e621", "e926", "furbooru"}
+var providers = []string{"rule34", "danbooru", "gelbooru", "tbib", "xbooru", "hypnohub", "safebooru", "yandere", "konachan_com", "konachan_net", "e621", "e926", "furbooru", "derpibooru"}
 
 // MatoiPost minimal struct to extract matoi_file_url
 type MatoiPost struct {
