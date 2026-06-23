@@ -10,11 +10,10 @@ Unified REST + GraphQL API gateway for booru imageboards
   - [Supported providers](#supported-providers)
   - [Features](#features)
   - [Architecture](#architecture)
-  - [Prerequisites](#prerequisites)
-    - [Installation](#installation)
-      - [Docker](#docker)
-      - [Manual](#manual)
-      - [Configuration](#configuration)
+  - [Prerequisites + Installation](#prerequisites)
+    - [Docker](#docker)
+    - [Manual](#manual)
+    - [Configuration](#configuration)
   - [API reference](#api-reference)
     - [Posts](#posts)
     - [Query completion](#query-completion)
@@ -25,12 +24,6 @@ Unified REST + GraphQL API gateway for booru imageboards
   - [Authentication](#authentication)
   - [Caching](#caching)
   - [Prometheus metrics](#prometheus-metrics)
-  - [Rate limiting](#rate-limiting)
-  - [FlareSolverr](#flaresolverr)
-  - [Eiyuu query completion](#eiyuu-query-completion)
-  - [Design philosophy](#design-philosophy)
-  - [Development](#development)
-  - [Legal](#legal)
 
 ---
 
