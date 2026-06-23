@@ -1,7 +1,7 @@
 {
     "swagger": "2.0",
     "info": {
-        "description": "REST API wrapper/binding for imageboard APIs (Danbooru, Gelbooru, Rule34).",
+        "description": "Unified REST + GraphQL API gateway for booru imageboards",
         "title": "sinkaroid/matoi",
         "contact": {}
     },

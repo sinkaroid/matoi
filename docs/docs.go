@@ -2676,7 +2676,7 @@ var SwaggerInfo = &swag.Spec{
 	BasePath:         "/",
 	Schemes:          []string{},
 	Title:            "sinkaroid/matoi",
-	Description:      "REST API wrapper/binding for imageboard APIs (Danbooru, Gelbooru, Rule34).",
+	Description:      "Unified REST + GraphQL API gateway for booru imageboards",
 	InfoInstanceName: "swagger",
 	SwaggerTemplate:  docTemplate,
 	LeftDelim:        "{{",
