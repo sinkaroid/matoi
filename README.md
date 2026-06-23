@@ -2,7 +2,7 @@
 
 Unified REST + GraphQL API gateway for booru imageboards
 
-<a href="https://github.com/sinkaroid/matoi"><img align="right" src="resources/project/images/sinkaroid-matoi.png" width="400"></a>
+<a href="https://github.com/sinkaroid/matoi"><img align="right" src="resources/project/images/sinkaroid-matoi.png" width="320"></a>
 
 - [sinkaroid/matoi](#)
   - [The problem](#the-problem)
@@ -31,9 +31,8 @@ Unified REST + GraphQL API gateway for booru imageboards
 
 <div align="center">
 
-<a href="https://github.com/sinkaroid/matoi/actions/workflows/dockerized.yml"><img src="https://github.com/sinkaroid/matoi/actions/workflows/dockerized.yml/badge.svg"></a>
-<a href="https://github.com/sinkaroid/matoi/actions/workflows/lint.yml"><img src="https://github.com/sinkaroid/matoi/actions/workflows/lint.yml/badge.svg"></a>
-<a href="https://github.com/sinkaroid/matoi/actions/workflows/release.yml"><img src="https://github.com/sinkaroid/matoi/actions/workflows/release.yml/badge.svg"></a>
+<a href="https://github.com/sinkaroid/matoi/actions/workflows/playground.yml"><img src="https://github.com/sinkaroid/matoi/actions/workflows/playground.yml/badge.svg"></a>
+<a href="https://qlty.sh/gh/sinkaroid/projects/matoi"><img src="https://qlty.sh/gh/sinkaroid/projects/matoi/maintainability.svg" alt="Maintainability" /></a>
 
 Unified REST + GraphQL API gateway for booru imageboards — normalizes 15+ imageboard APIs into a single consistent interface.
 Swap the provider name in your URL, get the same JSON schema back.
