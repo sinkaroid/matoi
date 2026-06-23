@@ -2,7 +2,7 @@
 
 Unified REST + GraphQL API gateway for booru imageboards
 
-<a href="https://github.com/sinkaroid/matoi"><img align="right" src="resources/project/images/sinkaroid-matoi.png" width="320"></a>
+<a href="https://github.com/sinkaroid/matoi"><img align="right" src="resources/project/images/sinkaroid-matoi.png" width="350"></a>
 
 - [sinkaroid/matoi](#)
   - [The problem](#the-problem)
