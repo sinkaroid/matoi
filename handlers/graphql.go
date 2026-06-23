@@ -35,10 +35,11 @@ type GraphQLHandler struct {
 	e926Provider        *providers.E926Provider
 	furbooruProvider    *providers.FurbooruProvider
 	derpibooruProvider  *providers.DerpibooruProvider
+	realbooruProvider   *providers.RealbooruProvider
 }
 
 // NewGraphQLHandler initializes the GraphQL schema and returns the handler.
-func NewGraphQLHandler(cfg *config.Config, dan *providers.DanbooruProvider, gel *providers.GelbooruProvider, r34 *providers.Rule34Provider, tbib *providers.TbibProvider, xbooru *providers.XbooruProvider, hypnohub *providers.HypnohubProvider, safebooru *providers.SafebooruProvider, yandere *providers.YandereProvider, konachanCom *providers.KonachanComProvider, konachanNet *providers.KonachanNetProvider, e621 *providers.E621Provider, e926 *providers.E926Provider, furbooru *providers.FurbooruProvider, derpibooru *providers.DerpibooruProvider) *GraphQLHandler {
+func NewGraphQLHandler(cfg *config.Config, dan *providers.DanbooruProvider, gel *providers.GelbooruProvider, r34 *providers.Rule34Provider, tbib *providers.TbibProvider, xbooru *providers.XbooruProvider, hypnohub *providers.HypnohubProvider, safebooru *providers.SafebooruProvider, yandere *providers.YandereProvider, konachanCom *providers.KonachanComProvider, konachanNet *providers.KonachanNetProvider, e621 *providers.E621Provider, e926 *providers.E926Provider, furbooru *providers.FurbooruProvider, derpibooru *providers.DerpibooruProvider, realbooru *providers.RealbooruProvider) *GraphQLHandler {
 	h := &GraphQLHandler{
 		cfg:                 cfg,
 		danbooruProvider:    dan,
@@ -55,6 +56,7 @@ func NewGraphQLHandler(cfg *config.Config, dan *providers.DanbooruProvider, gel 
 		e926Provider:        e926,
 		furbooruProvider:    furbooru,
 		derpibooruProvider:  derpibooru,
+		realbooruProvider:   realbooru,
 	}
 	h.initSchema()
 	return h
@@ -120,6 +122,7 @@ func (h *GraphQLHandler) initSchema() {
 	e926Type := createProviderType("E926", h.resolveE926Posts, h.resolveE926Completion)
 	furbooruType := createProviderType("Furbooru", h.resolveFurbooruPosts, h.resolveFurbooruCompletion)
 	derpibooruType := createProviderType("Derpibooru", h.resolveDerpibooruPosts, h.resolveDerpibooruCompletion)
+	realbooruType := createProviderType("Realbooru", h.resolveRealbooruPosts, h.resolveRealbooruCompletion)
 
 	noopResolve := func(_ graphql.ResolveParams) (interface{}, error) { return struct{}{}, nil }
 
@@ -140,6 +143,7 @@ func (h *GraphQLHandler) initSchema() {
 			"e926":         &graphql.Field{Type: e926Type, Resolve: noopResolve},
 			"furbooru":     &graphql.Field{Type: furbooruType, Resolve: noopResolve},
 			"derpibooru":   &graphql.Field{Type: derpibooruType, Resolve: noopResolve},
+			"realbooru":    &graphql.Field{Type: realbooruType, Resolve: noopResolve},
 		},
 	})
 
@@ -563,4 +567,14 @@ func (h *GraphQLHandler) resolveDerpibooruPosts(p graphql.ResolveParams) (interf
 //nolint:gocritic // signature required
 func (h *GraphQLHandler) resolveDerpibooruCompletion(p graphql.ResolveParams) (interface{}, error) {
 	return h.resolveGenericCompletion(p, h.derpibooruProvider.QueryCompletion)
+}
+
+//nolint:gocritic // signature required
+func (h *GraphQLHandler) resolveRealbooruPosts(p graphql.ResolveParams) (interface{}, error) {
+	return h.resolveGenericPosts(p, "realbooru", h.realbooruProvider.FetchPosts)
+}
+
+//nolint:gocritic // signature required
+func (h *GraphQLHandler) resolveRealbooruCompletion(p graphql.ResolveParams) (interface{}, error) {
+	return h.resolveGenericCompletion(p, h.realbooruProvider.QueryCompletion)
 }
