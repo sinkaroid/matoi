@@ -8,8 +8,10 @@ import (
 
 	"github.com/gofiber/contrib/v3/swaggerui"
 	"github.com/gofiber/fiber/v3"
+	"github.com/gofiber/fiber/v3/middleware/adaptor"
 	"github.com/gofiber/fiber/v3/middleware/cors"
 	"github.com/gofiber/fiber/v3/middleware/logger"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
 
 // SetupRoutes registers all routes for the application, accepting handlers via dependency injection.
@@ -27,6 +29,9 @@ func SetupRoutes(app *fiber.App, cfg *config.Config, rule34Handler *handlers.Rul
 ) {
 	// Enable CORS globally
 	app.Use(cors.New())
+
+	// Register Custom Prometheus HTTP Middleware
+	app.Use(middleware.PrometheusMiddleware())
 
 	// Request Logger Middleware
 	if cfg.EnableLogs {
@@ -51,6 +56,9 @@ func SetupRoutes(app *fiber.App, cfg *config.Config, rule34Handler *handlers.Rul
 
 	// Initialize Authentication Middleware
 	authMiddleware := middleware.RequireAPIKey(cfg.APIKey)
+
+	// Register Prometheus Metrics endpoint (unprotected)
+	app.Get("/metrics", adaptor.HTTPHandler(promhttp.Handler()))
 
 	// Register Public Media Proxy endpoint (unprotected)
 	app.Get("/api/rule34/media", rule34Handler.ProxyMedia)
