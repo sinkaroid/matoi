@@ -81,3 +81,8 @@ tasks:
     desc: Run prototype test for the Derpibooru provider
     cmds:
       - go test -count=1 -v ./dev_tools -run TestDerpibooruPrototype
+
+  test-realbooru:
+    desc: Run prototype test for the Realbooru provider
+    cmds:
+      - go test -count=1 -v ./dev_tools -run TestRealbooruScraping
