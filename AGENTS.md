@@ -2,7 +2,7 @@
 
 ## Project Overview
 
-Go learning project — REST API wrapper/binding for imageboard APIs (Danbooru, Gelbooru, Rule34).
+Go learning project — Unified REST + GraphQL API gateway for booru imageboards.
 Stack: Fiber v3, Redis (Keyv-equivalent caching), Swagger (swag + swaggerui).
 
 ## Locked Decisions

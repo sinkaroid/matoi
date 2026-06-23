@@ -150,7 +150,7 @@ func parseKonachanNetAutocompleteTags(doc *goquery.Document) []string {
 }
 
 func (p *KonachanNetProvider) buildURL(tags string, limit, page int) (string, error) {
-	u, err := url.Parse(p.Cfg.KonachanNetURL)
+	u, err := url.Parse("https://konachan.net/post.json")
 	if err != nil {
 		return "", fmt.Errorf("failed to parse KonachanNet URL: %w", err)
 	}

@@ -53,8 +53,8 @@ func (h *KonachanComHandler) GetPosts(c fiber.Ctx) error {
 		limit = 20
 	}
 
-	maxLimit, err := strconv.Atoi(h.Provider.Cfg.KonachanComReturnLimit)
-	if err != nil || maxLimit <= 0 {
+	maxLimit := h.Provider.Cfg.PostRestReturnLimit
+	if maxLimit <= 0 {
 		maxLimit = 100
 	}
 

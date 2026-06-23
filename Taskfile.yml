@@ -6,6 +6,14 @@ tasks:
     cmds:
       - air
 
+  kill-dev:
+    desc: Kill any process occupying port 3000 (useful when air leaves a zombie process)
+    cmds:
+      - cmd: powershell -Command "Get-NetTCPConnection -LocalPort 3000 -ErrorAction SilentlyContinue | ForEach-Object { Stop-Process -Id $$_.OwningProcess -Force -ErrorAction SilentlyContinue }; Write-Host 'Port 3000 cleared'"
+        platforms: [windows]
+      - cmd: lsof -ti:3000 | xargs kill -9 || true
+        platforms: [linux, darwin]
+
   build:
     desc: Compile the application into a binary
     cmds:

@@ -52,13 +52,7 @@ func (p *DerpibooruProvider) FetchPosts(ctx context.Context, tags string, limit,
 		Timeout:   10 * time.Second,
 	}
 
-	baseURL := p.Config.DerpibooruURL
-	if baseURL == "" {
-		baseURL = "https://derpibooru.org/api/v1"
-	}
-	endpointURL := baseURL + "/json/search/images"
-
-	reqURL, err := url.Parse(endpointURL)
+	reqURL, err := url.Parse("https://derpibooru.org/api/v1/json/search/images")
 	if err != nil {
 		return nil, fmt.Errorf("invalid derpibooru url: %w", err)
 	}
@@ -69,7 +63,7 @@ func (p *DerpibooruProvider) FetchPosts(ctx context.Context, tags string, limit,
 	}
 
 	if limit <= 0 {
-		limit = p.Config.DerpibooruReturnLmt
+		limit = p.Config.PostRestReturnLimit
 	}
 	q.Add("per_page", strconv.Itoa(limit))
 	q.Add("page", strconv.Itoa(page))
@@ -181,11 +175,7 @@ func (p *DerpibooruProvider) QueryCompletion(ctx context.Context, query string) 
 		Timeout: 10 * time.Second,
 	}
 
-	baseURL := p.Config.DerpibooruURL
-	if baseURL == "" {
-		baseURL = "https://derpibooru.org/api/v1"
-	}
-	searchURL := fmt.Sprintf("%s/json/search/tags?q=*%s*&per_page=15", baseURL, url.QueryEscape(query))
+	searchURL := fmt.Sprintf("https://derpibooru.org/api/v1/json/search/tags?q=*%s*&per_page=15", url.QueryEscape(query))
 
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, searchURL, http.NoBody)
 	if err != nil {

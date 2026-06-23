@@ -59,8 +59,12 @@ func (h *TbibHandler) GetPosts(c fiber.Ctx) error {
 	if err != nil || limit <= 0 {
 		limit = 20
 	}
-	if limit > 100 {
-		limit = 100
+	maxLimit := h.provider.Cfg.PostRestReturnLimit
+	if maxLimit <= 0 {
+		maxLimit = 100
+	}
+	if limit > maxLimit {
+		limit = maxLimit
 	}
 
 	pageStr := c.Query("page", "1")

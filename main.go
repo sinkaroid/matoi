@@ -1,7 +1,7 @@
 // Package main is the entry point for the Matoi API service.
 //
 //	@title			sinkaroid/matoi
-//	@description	REST API wrapper/binding for imageboard APIs (Danbooru, Gelbooru, Rule34).
+//	@description	Unified REST + GraphQL API gateway for booru imageboards
 //	@tag.name		graphql
 //	@tag.name		danbooru
 //	@tag.name		gelbooru

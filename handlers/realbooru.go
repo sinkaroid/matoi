@@ -60,7 +60,7 @@ func (h *RealbooruHandler) GetPosts(c fiber.Ctx) error {
 
 	limit, err := strconv.Atoi(limitStr)
 	if err != nil || limit <= 0 {
-		limit = h.Cfg.RealbooruReturnLimit
+		limit = 42
 	}
 
 	page, err := strconv.Atoi(pageStr)

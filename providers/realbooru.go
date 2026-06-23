@@ -89,7 +89,7 @@ func (p *RealbooruProvider) FetchPosts(ctx context.Context, tags string, limit, 
 
 // QueryCompletion fetches tag autocomplete suggestions using Realbooru's native JSON autocomplete endpoint.
 func (p *RealbooruProvider) QueryCompletion(ctx context.Context, query string) ([]string, error) {
-	urlStr := fmt.Sprintf("%s?page=autocomplete&term=%s", p.Cfg.RealbooruURL, url.QueryEscape(query))
+	urlStr := fmt.Sprintf("https://realbooru.com/index.php?page=autocomplete&term=%s", url.QueryEscape(query))
 
 	tr := &http.Transport{
 		TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
@@ -140,7 +140,7 @@ func (p *RealbooruProvider) QueryCompletion(ctx context.Context, query string) (
 }
 
 func (p *RealbooruProvider) buildURL(tags string, page int) (string, error) {
-	u, err := url.Parse(p.Cfg.RealbooruURL)
+	u, err := url.Parse("https://realbooru.com/index.php")
 	if err != nil {
 		return "", fmt.Errorf("failed to parse Realbooru URL: %w", err)
 	}

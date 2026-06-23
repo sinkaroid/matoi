@@ -53,8 +53,8 @@ func (h *HypnohubHandler) GetPosts(c fiber.Ctx) error {
 		limit = 20
 	}
 
-	maxLimit, err := strconv.Atoi(h.Provider.Cfg.HypnohubReturnLimit)
-	if err != nil || maxLimit <= 0 {
+	maxLimit := h.Provider.Cfg.PostRestReturnLimit
+	if maxLimit <= 0 {
 		maxLimit = 100
 	}
 
@@ -199,7 +199,7 @@ func (h *HypnohubHandler) ProxyMedia(c fiber.Ctx) error {
 	}
 
 	req.Header.Set("User-Agent", h.Provider.Cfg.UserAgent)
-	req.Header.Set("Referer", h.Provider.Cfg.HypnohubURL)
+	req.Header.Set("Referer", "https://hypnohub.net/")
 
 	client := &http.Client{Timeout: 30 * time.Second}
 	resp, err := client.Do(req)

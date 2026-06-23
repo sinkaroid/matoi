@@ -70,7 +70,7 @@ func (p *E621Provider) FetchPosts(ctx context.Context, tags string, limit, page 
 		Timeout:   10 * time.Second,
 	}
 
-	reqURL, err := url.Parse(p.Config.E621URL)
+	reqURL, err := url.Parse("https://e621.net/posts.json")
 	if err != nil {
 		return nil, fmt.Errorf("invalid e621 url: %w", err)
 	}
@@ -81,7 +81,7 @@ func (p *E621Provider) FetchPosts(ctx context.Context, tags string, limit, page 
 	}
 
 	if limit <= 0 {
-		limit = p.Config.E621ReturnLmt
+		limit = p.Config.PostRestReturnLimit
 	}
 	q.Add("limit", strconv.Itoa(limit))
 	q.Add("page", strconv.Itoa(page))

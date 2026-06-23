@@ -169,8 +169,8 @@ func (h *GraphQLHandler) resolveGenericPosts(p graphql.ResolveParams, providerNa
 	if !ok || limit <= 0 {
 		limit = 20
 	}
-	if limit > 100 {
-		limit = 100
+	if limit > h.cfg.PostRestReturnLimit {
+		limit = h.cfg.PostRestReturnLimit
 	}
 	page, ok := p.Args["page"].(int)
 	if !ok || page <= 0 {

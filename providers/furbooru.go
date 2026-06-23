@@ -52,13 +52,7 @@ func (p *FurbooruProvider) FetchPosts(ctx context.Context, tags string, limit, p
 		Timeout:   10 * time.Second,
 	}
 
-	baseURL := p.Config.FurbooruURL
-	if baseURL == "" {
-		baseURL = "https://furbooru.org/api/v1"
-	}
-	endpointURL := baseURL + "/json/search/images"
-
-	reqURL, err := url.Parse(endpointURL)
+	reqURL, err := url.Parse("https://furbooru.org/api/v1/json/search/images")
 	if err != nil {
 		return nil, fmt.Errorf("invalid furbooru url: %w", err)
 	}
@@ -69,7 +63,7 @@ func (p *FurbooruProvider) FetchPosts(ctx context.Context, tags string, limit, p
 	}
 
 	if limit <= 0 {
-		limit = p.Config.FurbooruReturnLmt
+		limit = p.Config.PostRestReturnLimit
 	}
 	q.Add("per_page", strconv.Itoa(limit))
 	q.Add("page", strconv.Itoa(page))
@@ -171,11 +165,7 @@ func (p *FurbooruProvider) QueryCompletion(ctx context.Context, query string) ([
 		Timeout: 10 * time.Second,
 	}
 
-	baseURL := p.Config.FurbooruURL
-	if baseURL == "" {
-		baseURL = "https://furbooru.org/api/v1"
-	}
-	searchURL := fmt.Sprintf("%s/json/search/tags?q=*%s*&per_page=15", baseURL, url.QueryEscape(query))
+	searchURL := fmt.Sprintf("https://furbooru.org/api/v1/json/search/tags?q=*%s*&per_page=15", url.QueryEscape(query))
 
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, searchURL, http.NoBody)
 	if err != nil {

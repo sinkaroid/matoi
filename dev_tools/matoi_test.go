@@ -169,7 +169,8 @@ func TestMatoiGraphQLAllProviders(t *testing.T) {
 	defer resp.Body.Close()
 
 	if resp.StatusCode != 200 {
-		t.Fatalf("GraphQL query failed with status %d", resp.StatusCode)
+		body, _ := io.ReadAll(resp.Body)
+		t.Fatalf("GraphQL query failed with status %d. Body: %s", resp.StatusCode, string(body))
 	}
 
 	body, _ := io.ReadAll(resp.Body)

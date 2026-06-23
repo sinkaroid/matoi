@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"math/rand/v2"
+	"net"
 	"net/http"
 	"net/url"
 	"strconv"
@@ -60,8 +61,12 @@ func (h *Rule34Handler) GetPosts(c fiber.Ctx) error {
 	if err != nil || limit <= 0 {
 		limit = 20
 	}
-	if limit > 100 {
-		limit = 100
+	maxLimit := h.provider.Cfg.PostRestReturnLimit
+	if maxLimit <= 0 {
+		maxLimit = 100
+	}
+	if limit > maxLimit {
+		limit = maxLimit
 	}
 
 	pageStr := c.Query("page", "1")
@@ -165,9 +170,11 @@ func (h *Rule34Handler) ProxyMedia(c fiber.Ctx) error {
 
 	client := &http.Client{
 		Transport: &http.Transport{
-			TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+			TLSClientConfig:       &tls.Config{InsecureSkipVerify: true},
+			DialContext:           (&net.Dialer{Timeout: 10 * time.Second}).DialContext,
+			ResponseHeaderTimeout: 15 * time.Second,
 		},
-		Timeout: 30 * time.Second,
+		// No Timeout here — total timeout would kill large file streaming mid-transfer
 	}
 
 	req, err := http.NewRequestWithContext(c.Context(), http.MethodGet, mediaURL, http.NoBody)
