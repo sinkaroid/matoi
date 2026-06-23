@@ -1,5 +1,5 @@
 <div align="center">
-<a href="http://localhost:3000"><img width="500" src="resources/project/images/tomoe-janda.png" alt="jandapress"></a>
+<a href="https://sinkaroid.github.io/matoi/"><img width="300" src="resources/project/images/matoi.png" alt="matoi"></a>
 
 <h4 align="center">Unified REST + GraphQL API gateway for booru imageboards</h4>
 <p align="center">
