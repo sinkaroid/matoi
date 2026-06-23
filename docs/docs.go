@@ -180,6 +180,152 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/derpibooru/media": {
+            "get": {
+                "tags": [
+                    "derpibooru"
+                ],
+                "summary": "Proxy and stream Derpibooru media",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Encoded Derpibooru media URL",
+                        "name": "url",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Streams the media file"
+                    },
+                    "400": {
+                        "description": "Invalid parameters",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "502": {
+                        "description": "Failed to fetch media",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/derpibooru/posts": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Fetches a list of posts from Derpibooru based on provided tags.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "derpibooru"
+                ],
+                "summary": "Fetch posts from Derpibooru",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Tags to search for",
+                        "name": "tags",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Max results (default 100)",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Page number (default 1)",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "boolean",
+                        "description": "Shuffle the results",
+                        "name": "shuffle",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.DerpibooruResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/derpibooru/query_completion": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Provides tag completion via native tags search. NO CACHE.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "derpibooru"
+                ],
+                "summary": "Derpibooru Tag Autocomplete",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Tag prefix to search for",
+                        "name": "tags",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.QueryCompletionResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/main.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/main.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/api/e621/media": {
             "get": {
                 "tags": [
@@ -441,6 +587,152 @@ const docTemplate = `{
                     "e926"
                 ],
                 "summary": "E926 Tag Autocomplete",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Tag prefix to search for",
+                        "name": "tags",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.QueryCompletionResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/main.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/main.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/furbooru/media": {
+            "get": {
+                "tags": [
+                    "furbooru"
+                ],
+                "summary": "Proxy and stream Furbooru media",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Encoded Furbooru media URL",
+                        "name": "url",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Streams the media file"
+                    },
+                    "400": {
+                        "description": "Invalid parameters",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "502": {
+                        "description": "Failed to fetch media",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/furbooru/posts": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Fetches a list of posts from Furbooru based on provided tags.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "furbooru"
+                ],
+                "summary": "Fetch posts from Furbooru",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Tags to search for",
+                        "name": "tags",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Max results (default 100)",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Page number (default 1)",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "boolean",
+                        "description": "Shuffle the results",
+                        "name": "shuffle",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.FurbooruResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/furbooru/query_completion": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Provides tag completion via native tags search. NO CACHE.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "furbooru"
+                ],
+                "summary": "Furbooru Tag Autocomplete",
                 "parameters": [
                     {
                         "type": "string",
@@ -1874,6 +2166,26 @@ const docTemplate = `{
                 }
             }
         },
+        "handlers.DerpibooruResponse": {
+            "type": "object",
+            "properties": {
+                "count": {
+                    "type": "integer"
+                },
+                "posts": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.Post"
+                    }
+                },
+                "provider": {
+                    "type": "string"
+                },
+                "success": {
+                    "type": "boolean"
+                }
+            }
+        },
         "handlers.E621Response": {
             "type": "object",
             "properties": {
@@ -1895,6 +2207,26 @@ const docTemplate = `{
             }
         },
         "handlers.E926Response": {
+            "type": "object",
+            "properties": {
+                "count": {
+                    "type": "integer"
+                },
+                "posts": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.Post"
+                    }
+                },
+                "provider": {
+                    "type": "string"
+                },
+                "success": {
+                    "type": "boolean"
+                }
+            }
+        },
+        "handlers.FurbooruResponse": {
             "type": "object",
             "properties": {
                 "count": {
@@ -2156,6 +2488,12 @@ const docTemplate = `{
         },
         {
             "name": "e926"
+        },
+        {
+            "name": "furbooru"
+        },
+        {
+            "name": "derpibooru"
         },
         {
             "name": "system"

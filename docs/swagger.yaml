@@ -13,6 +13,19 @@ definitions:
       success:
         type: boolean
     type: object
+  handlers.DerpibooruResponse:
+    properties:
+      count:
+        type: integer
+      posts:
+        items:
+          $ref: '#/definitions/models.Post'
+        type: array
+      provider:
+        type: string
+      success:
+        type: boolean
+    type: object
   handlers.E621Response:
     properties:
       count:
@@ -27,6 +40,19 @@ definitions:
         type: boolean
     type: object
   handlers.E926Response:
+    properties:
+      count:
+        type: integer
+      posts:
+        items:
+          $ref: '#/definitions/models.Post'
+        type: array
+      provider:
+        type: string
+      success:
+        type: boolean
+    type: object
+  handlers.FurbooruResponse:
     properties:
       count:
         type: integer
@@ -277,6 +303,99 @@ paths:
       summary: Danbooru Tag Autocomplete
       tags:
       - danbooru
+  /api/derpibooru/media:
+    get:
+      parameters:
+      - description: Encoded Derpibooru media URL
+        in: query
+        name: url
+        required: true
+        type: string
+      responses:
+        "200":
+          description: Streams the media file
+        "400":
+          description: Invalid parameters
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "502":
+          description: Failed to fetch media
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Proxy and stream Derpibooru media
+      tags:
+      - derpibooru
+  /api/derpibooru/posts:
+    get:
+      description: Fetches a list of posts from Derpibooru based on provided tags.
+      parameters:
+      - description: Tags to search for
+        in: query
+        name: tags
+        type: string
+      - description: Max results (default 100)
+        in: query
+        name: limit
+        type: integer
+      - description: Page number (default 1)
+        in: query
+        name: page
+        type: integer
+      - description: Shuffle the results
+        in: query
+        name: shuffle
+        type: boolean
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.DerpibooruResponse'
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - ApiKeyAuth: []
+      summary: Fetch posts from Derpibooru
+      tags:
+      - derpibooru
+  /api/derpibooru/query_completion:
+    get:
+      description: Provides tag completion via native tags search. NO CACHE.
+      parameters:
+      - description: Tag prefix to search for
+        in: query
+        name: tags
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.QueryCompletionResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/main.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/main.ErrorResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Derpibooru Tag Autocomplete
+      tags:
+      - derpibooru
   /api/e621/media:
     get:
       parameters:
@@ -463,6 +582,99 @@ paths:
       summary: E926 Tag Autocomplete
       tags:
       - e926
+  /api/furbooru/media:
+    get:
+      parameters:
+      - description: Encoded Furbooru media URL
+        in: query
+        name: url
+        required: true
+        type: string
+      responses:
+        "200":
+          description: Streams the media file
+        "400":
+          description: Invalid parameters
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "502":
+          description: Failed to fetch media
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Proxy and stream Furbooru media
+      tags:
+      - furbooru
+  /api/furbooru/posts:
+    get:
+      description: Fetches a list of posts from Furbooru based on provided tags.
+      parameters:
+      - description: Tags to search for
+        in: query
+        name: tags
+        type: string
+      - description: Max results (default 100)
+        in: query
+        name: limit
+        type: integer
+      - description: Page number (default 1)
+        in: query
+        name: page
+        type: integer
+      - description: Shuffle the results
+        in: query
+        name: shuffle
+        type: boolean
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.FurbooruResponse'
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - ApiKeyAuth: []
+      summary: Fetch posts from Furbooru
+      tags:
+      - furbooru
+  /api/furbooru/query_completion:
+    get:
+      description: Provides tag completion via native tags search. NO CACHE.
+      parameters:
+      - description: Tag prefix to search for
+        in: query
+        name: tags
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.QueryCompletionResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/main.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/main.ErrorResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Furbooru Tag Autocomplete
+      tags:
+      - furbooru
   /api/gelbooru/media:
     get:
       parameters:
@@ -1369,4 +1581,6 @@ tags:
 - name: konachan_net
 - name: e621
 - name: e926
+- name: furbooru
+- name: derpibooru
 - name: system
