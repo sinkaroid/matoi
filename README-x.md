@@ -1,21 +1,8 @@
-<div align="center">
-<a href="http://localhost:3000"><img width="500" src="resources/project/images/tomoe-janda.png" alt="jandapress"></a>
+# sinkaroid/matoi
 
-<h4 align="center">Unified REST + GraphQL API gateway for booru imageboards</h4>
-<p align="center">
-<a href="https://github.com/sinkaroid/matoi/actions/workflows/playground.yml"><img src="https://github.com/sinkaroid/matoi/actions/workflows/playground.yml/badge.svg"></a>
-<a href="https://qlty.sh/gh/sinkaroid/projects/matoi"><img src="https://qlty.sh/gh/sinkaroid/projects/matoi/maintainability.svg" alt="Maintainability" /></a>
-</p>
+Unified REST + GraphQL API gateway for booru imageboards
 
-<a href="https://github.com/sinkaroid/matoi/blob/master/CONTRIBUTING.md">Contributing</a> •
-<a href="https://sinkaroid.github.io/matoi">Playground</a> •
-<a href="https://github.com/sinkaroid/matoi/issues/new/choose">Report Issues</a>
-
-</div>
-
----
-
-<a href="http://localhost:3000"><img align="right" src="resources/project/images/sinkaroid-matoi.png" width="370"></a>
+<a href="https://github.com/sinkaroid/matoi"><img align="right" src="resources/project/images/sinkaroid-matoi.png" width="350"></a>
 
 - [sinkaroid/matoi](#)
   - [The problem](#the-problem)
@@ -39,6 +26,23 @@
   - [Prometheus metrics](#prometheus-metrics)
   - [Rate limiting](#rate-limiting)
   - [FlareSolverr](#flaresolverr)
+
+---
+
+<div align="center">
+
+<a href="https://github.com/sinkaroid/matoi/actions/workflows/playground.yml"><img src="https://github.com/sinkaroid/matoi/actions/workflows/playground.yml/badge.svg"></a>
+<a href="https://qlty.sh/gh/sinkaroid/projects/matoi"><img src="https://qlty.sh/gh/sinkaroid/projects/matoi/maintainability.svg" alt="Maintainability" /></a>
+
+Unified REST + GraphQL API gateway for booru imageboards — normalizes 15+ imageboard APIs into a single consistent interface.
+Swap the provider name in your URL, get the same JSON schema back.
+
+<b>
+<a href="https://github.com/sinkaroid/matoi/blob/master/CONTRIBUTING.md">Contributing</a> •
+<a href="https://sinkaroid.github.io/matoi">Playground</a> •
+<a href="https://github.com/sinkaroid/matoi/issues/new/choose">Report Issues</a>
+</b>
+</div>
 
 ## The problem
 
