@@ -76,3 +76,8 @@ tasks:
     desc: Run prototype test for the Furbooru provider
     cmds:
       - go test -count=1 -v ./dev_tools -run TestFurbooruPrototype
+
+  test-derpibooru:
+    desc: Run prototype test for the Derpibooru provider
+    cmds:
+      - go test -count=1 -v ./dev_tools -run TestDerpibooruPrototype
