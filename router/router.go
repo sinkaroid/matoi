@@ -25,6 +25,7 @@ func SetupRoutes(app *fiber.App, cfg *config.Config, rule34Handler *handlers.Rul
 	e926Handler *handlers.E926Handler,
 	furbooruHandler *handlers.FurbooruHandler,
 	derpibooruHandler *handlers.DerpibooruHandler,
+	realbooruHandler *handlers.RealbooruHandler,
 	graphqlHandler *handlers.GraphQLHandler,
 ) {
 	// Enable CORS globally
@@ -75,6 +76,7 @@ func SetupRoutes(app *fiber.App, cfg *config.Config, rule34Handler *handlers.Rul
 	app.Get("/api/e926/media", e926Handler.ProxyMedia)
 	app.Get("/api/furbooru/media", furbooruHandler.ProxyMedia)
 	app.Get("/api/derpibooru/media", derpibooruHandler.ProxyMedia)
+	app.Get("/api/realbooru/media", realbooruHandler.ProxyMedia)
 
 	// Protected API Group
 	api := app.Group("/api", authMiddleware)
@@ -132,6 +134,10 @@ func SetupRoutes(app *fiber.App, cfg *config.Config, rule34Handler *handlers.Rul
 	// Register Derpibooru protected endpoints
 	api.Get("/derpibooru/posts", derpibooruHandler.GetPosts)
 	api.Get("/derpibooru/query_completion", derpibooruHandler.QueryCompletion)
+
+	// Register Realbooru protected endpoints
+	api.Get("/realbooru/posts", realbooruHandler.GetPosts)
+	api.Get("/realbooru/query_completion", realbooruHandler.QueryCompletion)
 
 	// Register GraphQL endpoints
 	if cfg.EnableGraphQL && graphqlHandler != nil {
