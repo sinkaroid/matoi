@@ -159,7 +159,7 @@ const app = new Elysia()
 | Field | Value |
 | :--- | :--- |
 | **Condition** | `process_resident_set_size_bytes` (or `go_memstats_sys_bytes`) > 85% of container/VPS limit for 3 minutes |
-| **Action** | Send a critical alert to Slack/Discord/PagerDuty before an OOM Kill occurs |
+| **Action** | Send a critical alert to Telegram/Discord before an OOM Kill occurs |
 
 ### 4.2 API Failure Rate Alert
 
