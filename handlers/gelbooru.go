@@ -54,11 +54,11 @@ type GelbooruResponse struct {
 func (h *GelbooruHandler) GetPosts(c fiber.Ctx) error {
 	tags := c.Query("tags", "")
 
-	defaultLimit := strconv.Itoa(h.provider.Cfg.GelbooruReturnLmt)
+	defaultLimit := strconv.Itoa(h.provider.Cfg.PostRestReturnLimit)
 	limitStr := c.Query("limit", defaultLimit)
 	limit, err := strconv.Atoi(limitStr)
 	if err != nil || limit <= 0 {
-		limit = h.provider.Cfg.GelbooruReturnLmt
+		limit = h.provider.Cfg.PostRestReturnLimit
 	}
 	if limit > 100 {
 		limit = 100

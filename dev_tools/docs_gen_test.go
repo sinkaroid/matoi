@@ -15,8 +15,14 @@ func TestGenerateDocsUI(t *testing.T) {
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Matoi API Documentation</title>
   <link rel="stylesheet" type="text/css" href="https://unpkg.com/swagger-ui-dist@5.11.0/swagger-ui.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <style>
-    body { margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background-color: #fafafa; }
+    body, input, button { margin: 0; padding: 0; font-family: 'Poppins', sans-serif; }
+    body { background-color: #fafafa; }
+    .swagger-ui, .swagger-ui * { font-family: 'Poppins', sans-serif !important; }
+    .swagger-ui .model-title { word-break: break-all; overflow-wrap: anywhere; }
+    .swagger-ui .opblock .opblock-summary-path { max-width: 100%%; word-break: break-all; overflow-wrap: anywhere; }
+    .swagger-ui table { display: block; overflow-x: auto; }
     #matoi-settings { 
       padding: 16px 24px; 
       background: #ffffff; 

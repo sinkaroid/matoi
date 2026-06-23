@@ -152,7 +152,7 @@ func parseHypnohubAutocompleteTags(doc *goquery.Document) []string {
 }
 
 func (p *HypnohubProvider) buildURL(tags string, limit, page int) (string, error) {
-	u, err := url.Parse(p.Cfg.HypnohubURL)
+	u, err := url.Parse("https://hypnohub.net/index.php")
 	if err != nil {
 		return "", fmt.Errorf("failed to parse Hypnohub URL: %w", err)
 	}

@@ -150,7 +150,7 @@ func parseYandereAutocompleteTags(doc *goquery.Document) []string {
 }
 
 func (p *YandereProvider) buildURL(tags string, limit, page int) (string, error) {
-	u, err := url.Parse(p.Cfg.YandereURL)
+	u, err := url.Parse("https://yande.re/post.json")
 	if err != nil {
 		return "", fmt.Errorf("failed to parse Yandere URL: %w", err)
 	}

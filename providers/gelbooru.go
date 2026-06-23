@@ -159,7 +159,7 @@ func (p *GelbooruProvider) parseAutocompleteTags(doc *goquery.Document) []string
 }
 
 func (p *GelbooruProvider) buildURL(tags string, limit, page int) (string, error) {
-	u, err := url.Parse(p.Cfg.GelbooruURL)
+	u, err := url.Parse("https://gelbooru.com/index.php")
 	if err != nil {
 		return "", fmt.Errorf("failed to parse Gelbooru URL: %w", err)
 	}

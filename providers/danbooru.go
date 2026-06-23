@@ -52,7 +52,7 @@ func (p *DanbooruProvider) FetchPosts(ctx context.Context, tags string, limit, p
 		Timeout:   10 * time.Second,
 	}
 
-	reqURL, err := url.Parse(p.Config.DanbooruURL)
+	reqURL, err := url.Parse("https://danbooru.donmai.us/posts.json")
 	if err != nil {
 		return nil, fmt.Errorf("invalid danbooru url: %w", err)
 	}
@@ -68,7 +68,7 @@ func (p *DanbooruProvider) FetchPosts(ctx context.Context, tags string, limit, p
 	}
 
 	if limit <= 0 {
-		limit = p.Config.DanbooruReturnLmt
+		limit = p.Config.PostRestReturnLimit
 	}
 	q.Add("limit", strconv.Itoa(limit))
 	q.Add("page", strconv.Itoa(page))

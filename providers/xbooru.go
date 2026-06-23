@@ -153,7 +153,7 @@ func parseXbooruAutocompleteTags(doc *goquery.Document) []string {
 }
 
 func (p *XbooruProvider) buildURL(tags string, limit, page int) (string, error) {
-	u, err := url.Parse(p.Cfg.XbooruURL)
+	u, err := url.Parse("https://xbooru.com/index.php")
 	if err != nil {
 		return "", fmt.Errorf("failed to parse Xbooru URL: %w", err)
 	}

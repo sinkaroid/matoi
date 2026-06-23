@@ -19,57 +19,28 @@ var AppVersion = "15.0.0-alpha"
 
 // Config holds all the configuration variables for the application.
 type Config struct {
-	Port                   string
-	ResolverURL            string
-	UserAgent              string
-	EnableLogs             bool
-	EnableGraphQL          bool
-	APIKey                 string
-	RedisURL               string
-	RedisExpireCache       time.Duration
-	E621URL                string
-	E621ReturnLmt          int
-	E621APIID              string
-	E621APIKey             string
-	E926URL                string
-	E926ReturnLmt          int
-	E926APIID              string
-	E926APIKey             string
-	FurbooruURL            string
-	FurbooruReturnLmt      int
-	FurbooruAPIKey         string
-	DerpibooruURL          string
-	DerpibooruReturnLmt    int
-	DerpibooruAPIKey       string
-	DanbooruURL            string
-	DanbooruReturnLmt      int
-	DanbooruAPIID          string
-	DanbooruAPIKey         string
-	GelbooruURL            string
-	GelbooruReturnLmt      int
-	GelbooruAPIKey         string
-	GelbooruUserID         string
-	Rule34URL              string
-	Rule34ReturnLimit      string
-	Rule34APIID            string
-	Rule34APIKey           string
-	TbibURL                string
-	TbibReturnLimit        string
-	XbooruURL              string
-	XbooruReturnLimit      string
-	HypnohubURL            string
-	HypnohubReturnLimit    string
-	SafebooruURL           string
-	SafebooruReturnLimit   string
-	YandereURL             string
-	YandereReturnLimit     string
-	KonachanComURL         string
-	KonachanComReturnLimit string
-	KonachanNetURL         string
-	KonachanNetReturnLimit string
-	FlareSolverrURL        string
-	RealbooruURL           string
-	RealbooruReturnLimit   int
+	Port                string
+	ResolverURL         string
+	UserAgent           string
+	EnableLogs          bool
+	EnableGraphQL       bool
+	APIKey              string
+	RedisURL            string
+	RedisExpireCache    time.Duration
+	PostRestReturnLimit int
+	E621APIID           string
+	E621APIKey          string
+	E926APIID           string
+	E926APIKey          string
+	FurbooruAPIKey      string
+	DerpibooruAPIKey    string
+	DanbooruAPIID       string
+	DanbooruAPIKey      string
+	GelbooruAPIKey      string
+	GelbooruUserID      string
+	Rule34APIID         string
+	Rule34APIKey        string
+	FlareSolverrURL     string
 }
 
 func getEnvWithDefault(key, fallback string) string {
@@ -89,156 +60,61 @@ func LoadConfig() *Config {
 		log.Println("Warning: No .env file loaded, relying on environment variables.")
 	}
 
-	port := os.Getenv("PORT")
+	port := os.Getenv("MATOI_PORT")
 	if port == "" {
 		port = "3000"
 	}
 
-	redisURL := os.Getenv("REDIS_URL")
+	redisURL := os.Getenv("MATOI_REDIS_URL")
 	if redisURL == "" {
 		redisURL = "redis://localhost:6379"
 	}
 
-	// Parse REDIS_EXPIRE_CACHE (in minutes, default to 5)
-	expireStr := os.Getenv("REDIS_EXPIRE_CACHE")
+	// Parse MATOI_REDIS_EXPIRE_CACHE (in minutes, default to 5)
+	expireStr := os.Getenv("MATOI_REDIS_EXPIRE_CACHE")
 	expireMinutes := 5
 	if val, err := strconv.Atoi(strings.TrimSpace(expireStr)); err == nil && val > 0 {
 		expireMinutes = val
 	}
 	redisExpire := time.Duration(expireMinutes) * time.Minute
 
-	danbooruLimitVal := 100
-	if val, err := strconv.Atoi(getEnvWithDefault("DANBOORU_RETURN_LIMIT", "100")); err == nil && val > 0 {
-		danbooruLimitVal = val
+	postRestReturnLimit := 100
+	if val, err := strconv.Atoi(getEnvWithDefault("MATOI_POST_REST_RETURN_LIMIT", "100")); err == nil && val > 0 {
+		postRestReturnLimit = val
 	}
 
-	e621LimitVal := 100
-	if val, err := strconv.Atoi(getEnvWithDefault("E621_RETURN_LIMIT", "100")); err == nil && val > 0 {
-		e621LimitVal = val
-	}
-
-	e926LimitVal := 100
-	if val, err := strconv.Atoi(getEnvWithDefault("E926_RETURN_LIMIT", "100")); err == nil && val > 0 {
-		e926LimitVal = val
-	}
-
-	furbooruLimitVal := 100
-	if val, err := strconv.Atoi(getEnvWithDefault("FURBOORU_RETURN_LIMIT", "100")); err == nil && val > 0 {
-		furbooruLimitVal = val
-	}
-
-	derpibooruLimitVal := 100
-	if val, err := strconv.Atoi(getEnvWithDefault("DERPIBOORU_RETURN_LIMIT", "100")); err == nil && val > 0 {
-		derpibooruLimitVal = val
-	}
-
-	gelbooruLimitVal := 100
-	if val, err := strconv.Atoi(getEnvWithDefault("GELBOORU_RETURN_LIMIT", "100")); err == nil && val > 0 {
-		gelbooruLimitVal = val
-	}
-
-	realbooruLimitVal := 42
-	if val, err := strconv.Atoi(getEnvWithDefault("REALBOORU_RETURN_LIMIT", "42")); err == nil && val > 0 {
-		realbooruLimitVal = val
-	}
-
-	userAgent := os.Getenv("USER_AGENT")
+	userAgent := os.Getenv("MATOI_USER_AGENT")
 	if userAgent == "" {
 		// Provide a safe default if not set
 		userAgent = fmt.Sprintf("matoi/%s %s", AppVersion, runtime.Version())
 	}
 
-	enableLogs := strings.ToLower(strings.TrimSpace(os.Getenv("ENABLE_LOGS"))) == "true"
-	enableGraphQL := strings.ToLower(strings.TrimSpace(os.Getenv("GRAPHQL"))) == "true"
-	apiKey := os.Getenv("API_KEY")
-
-	e621URL := getEnvWithDefault("E621_URL", "https://e621.net/posts.json")
-	e621Limit := e621LimitVal
-
-	e926URL := getEnvWithDefault("E926_URL", "https://e926.net/posts.json")
-	e926Limit := e926LimitVal
-
-	furbooruURL := getEnvWithDefault("FURBOORU_URL", "https://furbooru.org/api/v1")
-	furbooruLimit := furbooruLimitVal
-
-	derpibooruURL := getEnvWithDefault("DERPIBOORU_URL", "https://derpibooru.org/api/v1")
-	derpibooruLimit := derpibooruLimitVal
-
-	danbooruLimit := danbooruLimitVal
-	gelbooruURL := getEnvWithDefault("GELBOORU_URL", "https://gelbooru.com/index.php")
-	gelbooruLimit := gelbooruLimitVal
-	rule34URL := getEnvWithDefault("RULE34_URL", "https://api.rule34.xxx/index.php")
-	rule34Limit := getEnvWithDefault("RULE34_RETURN_LIMIT", "100")
-	tbibURL := getEnvWithDefault("TBIB_URL", "https://tbib.org/index.php")
-	tbibLimit := getEnvWithDefault("TBIB_RETURN_LIMIT", "100")
-	xbooruURL := getEnvWithDefault("XBOORU_URL", "https://xbooru.com/index.php")
-	xbooruLimit := getEnvWithDefault("XBOORU_RETURN_LIMIT", "100")
-	hypnohubURL := getEnvWithDefault("HYPNOHUB_URL", "https://hypnohub.net/post.json")
-	hypnohubLimit := getEnvWithDefault("HYPNOHUB_RETURN_LIMIT", "100")
-	safebooruURL := getEnvWithDefault("SAFEBOORU_URL", "https://safebooru.org/index.php")
-	safebooruLimit := getEnvWithDefault("SAFEBOORU_RETURN_LIMIT", "100")
-	yandereURL := getEnvWithDefault("YANDERE_URL", "https://yande.re/post.json")
-	yandereLimit := getEnvWithDefault("YANDERE_RETURN_LIMIT", "100")
-	konachanComURL := getEnvWithDefault("KONACHANCOM_URL", "https://konachan.com/post.json")
-	konachanComLimit := getEnvWithDefault("KONACHANCOM_RETURN_LIMIT", "100")
-	konachanNetURL := getEnvWithDefault("KONACHANNET_URL", "https://konachan.net/post.json")
-	konachanNetLimit := getEnvWithDefault("KONACHANNET_RETURN_LIMIT", "100")
-	realbooruURL := getEnvWithDefault("REALBOORU_URL", "https://realbooru.com/index.php")
-	realbooruLimit := realbooruLimitVal
-
-	flareSolverrURL := os.Getenv("FLARESOLVERR_URL")
+	enableLogs := strings.ToLower(strings.TrimSpace(os.Getenv("MATOI_ENABLE_LOGS"))) == "true"
+	enableGraphQL := strings.ToLower(strings.TrimSpace(os.Getenv("MATOI_GRAPHQL"))) == "true"
+	apiKey := os.Getenv("MATOI_API_KEY")
 
 	return &Config{
-		Port:                   port,
-		ResolverURL:            os.Getenv("RESOLVER_URL"),
-		UserAgent:              userAgent,
-		EnableLogs:             enableLogs,
-		EnableGraphQL:          enableGraphQL,
-		APIKey:                 apiKey,
-		RedisURL:               redisURL,
-		RedisExpireCache:       redisExpire,
-		E621URL:                e621URL,
-		E621ReturnLmt:          e621Limit,
-		E621APIID:              os.Getenv("E621_API_ID"),
-		E621APIKey:             os.Getenv("E621_API_KEY"),
-		E926URL:                e926URL,
-		E926ReturnLmt:          e926Limit,
-		E926APIID:              os.Getenv("E926_API_ID"),
-		E926APIKey:             os.Getenv("E926_API_KEY"),
-		FurbooruURL:            furbooruURL,
-		FurbooruReturnLmt:      furbooruLimit,
-		FurbooruAPIKey:         os.Getenv("FURBOORU_API_KEY"),
-		DerpibooruURL:          derpibooruURL,
-		DerpibooruReturnLmt:    derpibooruLimit,
-		DerpibooruAPIKey:       os.Getenv("DERPIBOORU_API_KEY"),
-		DanbooruURL:            os.Getenv("DANBOORU_URL"),
-		DanbooruReturnLmt:      danbooruLimit,
-		DanbooruAPIID:          os.Getenv("DANBOORU_API_ID"),
-		DanbooruAPIKey:         os.Getenv("DANBOORU_API_KEY"),
-		GelbooruURL:            gelbooruURL,
-		GelbooruReturnLmt:      gelbooruLimit,
-		GelbooruAPIKey:         os.Getenv("GELBOORU_API_KEY"),
-		GelbooruUserID:         os.Getenv("GELBOORU_API_ID"),
-		Rule34URL:              rule34URL,
-		Rule34ReturnLimit:      rule34Limit,
-		Rule34APIID:            os.Getenv("RULE34_API_ID"),
-		Rule34APIKey:           os.Getenv("RULE34_API_KEY"),
-		TbibURL:                tbibURL,
-		TbibReturnLimit:        tbibLimit,
-		XbooruURL:              xbooruURL,
-		XbooruReturnLimit:      xbooruLimit,
-		HypnohubURL:            hypnohubURL,
-		HypnohubReturnLimit:    hypnohubLimit,
-		SafebooruURL:           safebooruURL,
-		SafebooruReturnLimit:   safebooruLimit,
-		YandereURL:             yandereURL,
-		YandereReturnLimit:     yandereLimit,
-		KonachanComURL:         konachanComURL,
-		KonachanComReturnLimit: konachanComLimit,
-		KonachanNetURL:         konachanNetURL,
-		KonachanNetReturnLimit: konachanNetLimit,
-		FlareSolverrURL:        flareSolverrURL,
-		RealbooruURL:           realbooruURL,
-		RealbooruReturnLimit:   realbooruLimit,
+		Port:                port,
+		ResolverURL:         os.Getenv("MATOI_RESOLVER_URL"),
+		UserAgent:           userAgent,
+		EnableLogs:          enableLogs,
+		EnableGraphQL:       enableGraphQL,
+		APIKey:              apiKey,
+		RedisURL:            redisURL,
+		RedisExpireCache:    redisExpire,
+		PostRestReturnLimit: postRestReturnLimit,
+		E621APIID:           os.Getenv("E621_API_ID"),
+		E621APIKey:          os.Getenv("E621_API_KEY"),
+		E926APIID:           os.Getenv("E926_API_ID"),
+		E926APIKey:          os.Getenv("E926_API_KEY"),
+		FurbooruAPIKey:      os.Getenv("FURBOORU_API_KEY"),
+		DerpibooruAPIKey:    os.Getenv("DERPIBOORU_API_KEY"),
+		DanbooruAPIID:       os.Getenv("DANBOORU_API_ID"),
+		DanbooruAPIKey:      os.Getenv("DANBOORU_API_KEY"),
+		GelbooruAPIKey:      os.Getenv("GELBOORU_API_KEY"),
+		GelbooruUserID:      os.Getenv("GELBOORU_API_ID"),
+		Rule34APIID:         os.Getenv("RULE34_API_ID"),
+		Rule34APIKey:        os.Getenv("RULE34_API_KEY"),
+		FlareSolverrURL:     os.Getenv("MATOI_FLARESOLVERR_URL"),
 	}
 }

@@ -53,8 +53,8 @@ func (h *XbooruHandler) GetPosts(c fiber.Ctx) error {
 		limit = 20
 	}
 
-	maxLimit, err := strconv.Atoi(h.Provider.Cfg.XbooruReturnLimit)
-	if err != nil || maxLimit <= 0 {
+	maxLimit := h.Provider.Cfg.PostRestReturnLimit
+	if maxLimit <= 0 {
 		maxLimit = 100
 	}
 
@@ -199,7 +199,7 @@ func (h *XbooruHandler) ProxyMedia(c fiber.Ctx) error {
 	}
 
 	req.Header.Set("User-Agent", h.Provider.Cfg.UserAgent)
-	req.Header.Set("Referer", h.Provider.Cfg.XbooruURL)
+	req.Header.Set("Referer", "https://xbooru.com/")
 
 	client := &http.Client{Timeout: 30 * time.Second}
 	resp, err := client.Do(req)

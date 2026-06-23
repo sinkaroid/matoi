@@ -154,7 +154,7 @@ func parseTbibAutocompleteTags(doc *goquery.Document) []string {
 }
 
 func (p *TbibProvider) buildURL(tags string, limit, page int) (string, error) {
-	u, err := url.Parse(p.Cfg.TbibURL)
+	u, err := url.Parse("https://tbib.org/index.php")
 	if err != nil {
 		return "", fmt.Errorf("failed to parse TBIB URL: %w", err)
 	}

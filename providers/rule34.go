@@ -153,7 +153,7 @@ func parseAutocompleteTags(doc *goquery.Document) []string {
 }
 
 func (p *Rule34Provider) buildURL(tags string, limit, page int) (string, error) {
-	u, err := url.Parse(p.Cfg.Rule34URL)
+	u, err := url.Parse("https://api.rule34.xxx/index.php")
 	if err != nil {
 		return "", fmt.Errorf("failed to parse Rule34 URL: %w", err)
 	}

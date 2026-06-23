@@ -152,7 +152,7 @@ func parseSafebooruAutocompleteTags(doc *goquery.Document) []string {
 }
 
 func (p *SafebooruProvider) buildURL(tags string, limit, page int) (string, error) {
-	u, err := url.Parse(p.Cfg.SafebooruURL)
+	u, err := url.Parse("https://safebooru.org/index.php")
 	if err != nil {
 		return "", fmt.Errorf("failed to parse Safebooru URL: %w", err)
 	}
