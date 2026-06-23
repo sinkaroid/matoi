@@ -24,6 +24,8 @@ Unified REST + GraphQL API gateway for booru imageboards
   - [Authentication](#authentication)
   - [Caching](#caching)
   - [Prometheus metrics](#prometheus-metrics)
+  - [Rate limiting](#rate-limiting)
+  - [FlareSolverr](#flaresolverr)
 
 ---
 
