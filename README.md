@@ -585,7 +585,3 @@ Please ensure:
 - Linter passes (`task lint`)
 - Integration tests pass (`task test-matoi`)
 - Swagger docs are regenerated after handler changes
-
-## Legal
-
-[MIT](./LICENSE) © sinkaroid
