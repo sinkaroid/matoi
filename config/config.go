@@ -3,7 +3,6 @@ package config
 
 import (
 	"fmt"
-	"log"
 	"os"
 	"runtime"
 	"strconv"
@@ -15,7 +14,7 @@ import (
 
 // AppVersion defines the current version of the application.
 // Can be overridden at build time using -ldflags="-X 'matoi/config.AppVersion=xxx'"
-var AppVersion = "15.6.2-alpha"
+var AppVersion = "15.6.3-alpha"
 
 // Config holds all the configuration variables for the application.
 type Config struct {
@@ -56,9 +55,7 @@ func getEnvWithDefault(key, fallback string) string {
 //nolint:gocyclo,gocognit // Config loading naturally has many assignments
 func LoadConfig() *Config {
 	// Loading .env is optional as environment variables can be set directly in production.
-	if err := godotenv.Load(); err != nil {
-		log.Println("Warning: No .env file loaded, relying on environment variables.")
-	}
+	_ = godotenv.Load() //nolint:errcheck
 
 	port := os.Getenv("MATOI_PORT")
 	if port == "" {
