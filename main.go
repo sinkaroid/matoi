@@ -131,7 +131,7 @@ func main() {
 
 	// Run Fiber server on configured port
 	log.Printf("Starting server on port %s", cfg.Port)
-	if err := app.Listen(":" + cfg.Port); err != nil {
+	if err := app.Listen(fmt.Sprintf("0.0.0.0:%s", cfg.Port)); err != nil {
 		log.Fatalf("Failed to run the server: %v", err)
 	}
 }
