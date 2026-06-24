@@ -17,8 +17,9 @@ FROM alpine:latest
 
 WORKDIR /app
 
-# Copy the built binary
+# Copy the built binary and required assets
 COPY --from=builder /app/matoi .
+COPY --from=builder /app/docs ./docs
 
 # Expose port
 EXPOSE 3000
