@@ -20,13 +20,31 @@ func handler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if r.URL.Path != "/memory" && r.URL.Path != "/" {
+	if r.URL.Path != "/memory" && r.URL.Path != "/" && r.URL.Path != "/metrics" {
 		http.NotFound(w, r)
 		return
 	}
 
 	memBytes, source := getMemory()
 	memLimit := getLimit()
+
+	if r.URL.Path == "/metrics" {
+		w.Header().Set("Content-Type", "text/plain; version=0.0.4")
+		metrics := fmt.Sprintf("# HELP flaresolverr_memory_bytes Total memory usage in bytes (RSS of flaresolverr and its descendants)\n"+
+			"# TYPE flaresolverr_memory_bytes gauge\n"+
+			"flaresolverr_memory_bytes %d\n"+
+			"# HELP flaresolverr_memory_limit_bytes Memory limit in bytes\n"+
+			"# TYPE flaresolverr_memory_limit_bytes gauge\n"+
+			"flaresolverr_memory_limit_bytes %d\n"+
+			"# HELP flaresolverr_uptime_seconds Uptime of the sidecar in seconds\n"+
+			"# TYPE flaresolverr_uptime_seconds counter\n"+
+			"flaresolverr_uptime_seconds %f\n", memBytes, memLimit, time.Since(startTime).Seconds())
+
+		if _, err := w.Write([]byte(metrics)); err != nil {
+			fmt.Printf("write error: %v\n", err)
+		}
+		return
+	}
 
 	memMB := float64(memBytes) / (1024 * 1024)
 	limitMB := float64(memLimit) / (1024 * 1024)

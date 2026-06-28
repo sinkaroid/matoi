@@ -1,4 +1,4 @@
-// Package main is the entry point for the Matoi API service.
+// Package main is the entry point for the sinkaroid/matoi service.
 //
 //	@title			sinkaroid/matoi
 //	@description	Unified REST + GraphQL API gateway for booru imageboards
