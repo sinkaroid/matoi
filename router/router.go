@@ -46,7 +46,7 @@ func SetupRoutes(app *fiber.App, cfg *config.Config, rule34Handler *handlers.Rul
 	app.Use(swaggerui.New(swaggerui.Config{
 		FilePath: "./docs/swagger.json",
 		Path:     "swagger",
-		Title:    "Matoi API Documentation",
+		Title:    "sinkaroid/matoi Documentation",
 	}))
 
 	// Register Home endpoint
