@@ -1,4 +1,4 @@
-version: '3'
+version: "3"
 
 tasks:
   dev:
@@ -50,6 +50,11 @@ tasks:
     cmds:
       - qlty smells --all
 
+  swag-init:
+    desc: Initialize Swagger UI docs
+    cmds:
+      - swag init
+
   docs:generate:
     desc: "Generate static GH Pages index.html for Swagger UI"
     cmds:
@@ -66,7 +71,7 @@ tasks:
       - go test -count=1 -v ./dev_tools -run TestFlushCache
 
   test-matoi:
-    desc: Run the comprehensive integration test for all Matoi providers
+    desc: Run the comprehensive integration test for ALL Matoi providers
     cmds:
       - go test -count=1 -v ./dev_tools -run TestMatoi
 
@@ -94,3 +99,8 @@ tasks:
     desc: Run prototype test for the Realbooru provider
     cmds:
       - go test -count=1 -v ./dev_tools -run TestRealbooruScraping
+
+  test-konachan-net:
+    desc: Run prototype test for the KonachanNet provider using FlareSolverr directly
+    cmds:
+      - go test -count=1 -v ./dev_tools -run TestKonachanNetDirect

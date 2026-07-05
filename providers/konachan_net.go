@@ -1,6 +1,7 @@
 package providers
 
 import (
+	"bytes"
 	"context"
 	"crypto/tls"
 	"encoding/json"
@@ -55,6 +56,10 @@ func (p *KonachanNetProvider) FetchPosts(ctx context.Context, tags string, limit
 		return nil, err
 	}
 
+	if p.Cfg.FlareSolverrURL != "" {
+		return p.fetchPostsViaFlareSolverr(ctx, reqURL)
+	}
+
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, reqURL, http.NoBody)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create request: %w", err)
@@ -86,6 +91,31 @@ func (p *KonachanNetProvider) FetchPosts(ctx context.Context, tags string, limit
 	return mapKonachanNetPosts(rawPosts), nil
 }
 
+func (p *KonachanNetProvider) fetchPostsViaFlareSolverr(ctx context.Context, targetURL string) ([]models.Post, error) {
+	respBody, err := p.doFlareSolverrRequest(ctx, targetURL)
+	if err != nil {
+		return nil, err
+	}
+
+	// FlareSolverr returns the full HTML page. JSON is usually wrapped in <pre> tags by Chrome.
+	doc, err := goquery.NewDocumentFromReader(strings.NewReader(respBody))
+	if err != nil {
+		return nil, fmt.Errorf("failed to parse flaresolverr html: %w", err)
+	}
+
+	jsonText := doc.Find("body").Text()
+	if jsonText == "" {
+		jsonText = respBody // fallback
+	}
+
+	var rawPosts []KonachanNetPost
+	if err := json.Unmarshal([]byte(jsonText), &rawPosts); err != nil {
+		return nil, fmt.Errorf("failed to decode JSON from flaresolverr: %w", err)
+	}
+
+	return mapKonachanNetPosts(rawPosts), nil
+}
+
 // QueryCompletion fetches Eiyuu-style tag autocomplete suggestions from KonachanNet.
 func (p *KonachanNetProvider) QueryCompletion(ctx context.Context, query string) ([]string, error) {
 	urlStr := fmt.Sprintf("https://konachan.net/tag?name=*%s*", url.QueryEscape(query))
@@ -96,6 +126,10 @@ func (p *KonachanNetProvider) QueryCompletion(ctx context.Context, query string)
 	client := &http.Client{
 		Transport: tr,
 		Timeout:   10 * time.Second,
+	}
+
+	if p.Cfg.FlareSolverrURL != "" {
+		return p.queryCompletionViaFlareSolverr(ctx, urlStr)
 	}
 
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, urlStr, http.NoBody)
@@ -127,6 +161,78 @@ func (p *KonachanNetProvider) QueryCompletion(ctx context.Context, query string)
 	}
 
 	return parseKonachanNetAutocompleteTags(doc), nil
+}
+
+func (p *KonachanNetProvider) queryCompletionViaFlareSolverr(ctx context.Context, targetURL string) ([]string, error) {
+	respBody, err := p.doFlareSolverrRequest(ctx, targetURL)
+	if err != nil {
+		return nil, err
+	}
+
+	doc, err := goquery.NewDocumentFromReader(strings.NewReader(respBody))
+	if err != nil {
+		return nil, fmt.Errorf("failed to parse flaresolverr html: %w", err)
+	}
+
+	return parseKonachanNetAutocompleteTags(doc), nil
+}
+
+type flareSolverrNetResponse struct {
+	Status   string `json:"status"`
+	Message  string `json:"message"`
+	Solution struct {
+		Response string `json:"response"`
+		Status   int    `json:"status"`
+	} `json:"solution"`
+}
+
+func (p *KonachanNetProvider) doFlareSolverrRequest(ctx context.Context, targetURL string) (string, error) {
+	payload := map[string]interface{}{
+		"cmd":        "request.get",
+		"url":        targetURL,
+		"maxTimeout": 60000,
+	}
+
+	payloadBytes, err := json.Marshal(payload)
+	if err != nil {
+		return "", fmt.Errorf("failed to marshal flaresolverr payload: %w", err)
+	}
+
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, p.Cfg.FlareSolverrURL, bytes.NewBuffer(payloadBytes))
+	if err != nil {
+		return "", fmt.Errorf("failed to create flaresolverr request: %w", err)
+	}
+	req.Header.Set("Content-Type", "application/json")
+
+	client := &http.Client{Timeout: 65 * time.Second}
+	resp, err := client.Do(req)
+	if err != nil {
+		return "", fmt.Errorf("flaresolverr request failed: %w", err)
+	}
+	defer func() {
+		if closeErr := resp.Body.Close(); closeErr != nil {
+			_ = closeErr
+		}
+	}()
+
+	if resp.StatusCode != http.StatusOK {
+		return "", fmt.Errorf("flaresolverr returned status %d", resp.StatusCode)
+	}
+
+	var fsResp flareSolverrNetResponse
+	if err := json.NewDecoder(resp.Body).Decode(&fsResp); err != nil {
+		return "", fmt.Errorf("failed to decode flaresolverr JSON: %w", err)
+	}
+
+	if fsResp.Status != "ok" {
+		return "", fmt.Errorf("flaresolverr failed to solve: %s", fsResp.Message)
+	}
+
+	if fsResp.Solution.Status != http.StatusOK {
+		return "", fmt.Errorf("upstream returned status %d via flaresolverr", fsResp.Solution.Status)
+	}
+
+	return fsResp.Solution.Response, nil
 }
 
 func parseKonachanNetAutocompleteTags(doc *goquery.Document) []string {

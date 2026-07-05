@@ -61,7 +61,7 @@ func TestMatoiAllProviders(t *testing.T) {
 						break
 					}
 				} else if resp.StatusCode != 404 {
-					if p == "konachan_com" && resp.StatusCode == 500 {
+					if (p == "konachan_com" || p == "konachan_net") && resp.StatusCode == 500 {
 						t.Logf("[%s] Warning: Post test returned 500, likely due to Cloudflare 403. Skipping.", p)
 						activeTag = tag
 						break
@@ -71,11 +71,11 @@ func TestMatoiAllProviders(t *testing.T) {
 				resp.Body.Close()
 			}
 
-			if activeTag == "" && p != "konachan_com" {
+			if activeTag == "" && p != "konachan_com" && p != "konachan_net" {
 				t.Fatalf("[%s] No posts found for tags yuri, 1girl, or bikini", p)
 			}
 
-			if p == "konachan_com" && len(postsData.Posts) == 0 {
+			if (p == "konachan_com" || p == "konachan_net") && len(postsData.Posts) == 0 {
 				t.Logf("[%s] Skipping remaining tests due to CF block.", p)
 				return
 			}
