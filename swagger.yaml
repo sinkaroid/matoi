@@ -1,0 +1,1699 @@
+basePath: /
+definitions:
+  handlers.DanbooruResponse:
+    properties:
+      count:
+        type: integer
+      posts:
+        items:
+          $ref: '#/definitions/models.Post'
+        type: array
+      provider:
+        type: string
+      success:
+        type: boolean
+    type: object
+  handlers.DerpibooruResponse:
+    properties:
+      count:
+        type: integer
+      posts:
+        items:
+          $ref: '#/definitions/models.Post'
+        type: array
+      provider:
+        type: string
+      success:
+        type: boolean
+    type: object
+  handlers.E621Response:
+    properties:
+      count:
+        type: integer
+      posts:
+        items:
+          $ref: '#/definitions/models.Post'
+        type: array
+      provider:
+        type: string
+      success:
+        type: boolean
+    type: object
+  handlers.E926Response:
+    properties:
+      count:
+        type: integer
+      posts:
+        items:
+          $ref: '#/definitions/models.Post'
+        type: array
+      provider:
+        type: string
+      success:
+        type: boolean
+    type: object
+  handlers.FurbooruResponse:
+    properties:
+      count:
+        type: integer
+      posts:
+        items:
+          $ref: '#/definitions/models.Post'
+        type: array
+      provider:
+        type: string
+      success:
+        type: boolean
+    type: object
+  handlers.GelbooruResponse:
+    properties:
+      count:
+        type: integer
+      posts:
+        items:
+          $ref: '#/definitions/models.Post'
+        type: array
+      provider:
+        type: string
+      success:
+        type: boolean
+    type: object
+  handlers.GraphQLRequest:
+    properties:
+      operationName:
+        type: string
+      query:
+        type: string
+      variables:
+        additionalProperties: true
+        type: object
+    type: object
+  handlers.HomeResponse:
+    properties:
+      date:
+        type: string
+      endpoint:
+        type: string
+      heap:
+        type: string
+      message:
+        type: string
+      rss:
+        type: string
+      server:
+        type: string
+      success:
+        type: boolean
+      uptime:
+        type: string
+      version:
+        type: string
+    type: object
+  handlers.PingResponse:
+    properties:
+      status:
+        type: string
+      success:
+        type: boolean
+    type: object
+  handlers.QueryCompletionResponse:
+    properties:
+      success:
+        type: boolean
+      tags:
+        items:
+          type: string
+        type: array
+    type: object
+  handlers.Rule34Response:
+    properties:
+      count:
+        type: integer
+      posts:
+        items:
+          $ref: '#/definitions/models.Post'
+        type: array
+      provider:
+        type: string
+      success:
+        type: boolean
+    type: object
+  handlers.TbibResponse:
+    properties:
+      count:
+        type: integer
+      posts:
+        items:
+          $ref: '#/definitions/models.Post'
+        type: array
+      provider:
+        type: string
+      success:
+        type: boolean
+    type: object
+  main.ErrorResponse:
+    properties:
+      reason:
+        type: string
+      success:
+        type: boolean
+    type: object
+  models.Post:
+    properties:
+      directory:
+        type: string
+      file_url:
+        type: string
+      id:
+        type: integer
+      image:
+        type: string
+      link:
+        type: string
+      matoi_file_url:
+        type: string
+      matoi_preview_url:
+        type: string
+      matoi_sample_url:
+        type: string
+      preview_url:
+        type: string
+      rating:
+        description: s (safe), q (questionable), e (explicit)
+        type: string
+      sample_url:
+        type: string
+      score:
+        type: integer
+      source:
+        type: string
+      tags:
+        items:
+          type: string
+        type: array
+    type: object
+info:
+  contact: {}
+  description: Unified REST + GraphQL API gateway for booru imageboards
+  title: sinkaroid/matoi
+paths:
+  /:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.HomeResponse'
+      summary: System info and health check
+      tags:
+      - system
+  /api/danbooru/media:
+    get:
+      parameters:
+      - description: Encoded Danbooru media URL
+        in: query
+        name: url
+        required: true
+        type: string
+      responses:
+        "200":
+          description: Streams the media file
+        "400":
+          description: Invalid parameters
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "502":
+          description: Failed to fetch media
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Proxy and stream Danbooru media
+      tags:
+      - danbooru
+  /api/danbooru/posts:
+    get:
+      description: Fetches a list of posts from Danbooru based on provided tags.
+      parameters:
+      - description: Tags to search for
+        in: query
+        name: tags
+        type: string
+      - description: Max results (default 20, max 100)
+        in: query
+        name: limit
+        type: integer
+      - description: Page number (default 1)
+        in: query
+        name: page
+        type: integer
+      - description: Shuffle the results
+        in: query
+        name: shuffle
+        type: boolean
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.DanbooruResponse'
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - ApiKeyAuth: []
+      summary: Fetch posts from Danbooru
+      tags:
+      - danbooru
+  /api/danbooru/query_completion:
+    get:
+      description: Provides tag completion via scraping Danbooru's tags directory
+        (Eiyuu logic). Cached for 24 hours.
+      parameters:
+      - description: Tag prefix to search for
+        in: query
+        name: tags
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.QueryCompletionResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/main.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/main.ErrorResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Danbooru Tag Autocomplete
+      tags:
+      - danbooru
+  /api/derpibooru/media:
+    get:
+      parameters:
+      - description: Encoded Derpibooru media URL
+        in: query
+        name: url
+        required: true
+        type: string
+      responses:
+        "200":
+          description: Streams the media file
+        "400":
+          description: Invalid parameters
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "502":
+          description: Failed to fetch media
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Proxy and stream Derpibooru media
+      tags:
+      - derpibooru
+  /api/derpibooru/posts:
+    get:
+      description: Fetches a list of posts from Derpibooru based on provided tags.
+      parameters:
+      - description: Tags to search for
+        in: query
+        name: tags
+        type: string
+      - description: Max results (default 100)
+        in: query
+        name: limit
+        type: integer
+      - description: Page number (default 1)
+        in: query
+        name: page
+        type: integer
+      - description: Shuffle the results
+        in: query
+        name: shuffle
+        type: boolean
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.DerpibooruResponse'
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - ApiKeyAuth: []
+      summary: Fetch posts from Derpibooru
+      tags:
+      - derpibooru
+  /api/derpibooru/query_completion:
+    get:
+      description: Provides tag completion via native tags search. NO CACHE.
+      parameters:
+      - description: Tag prefix to search for
+        in: query
+        name: tags
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.QueryCompletionResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/main.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/main.ErrorResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Derpibooru Tag Autocomplete
+      tags:
+      - derpibooru
+  /api/e621/media:
+    get:
+      parameters:
+      - description: Encoded E621 media URL
+        in: query
+        name: url
+        required: true
+        type: string
+      responses:
+        "200":
+          description: Streams the media file
+        "400":
+          description: Invalid parameters
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "502":
+          description: Failed to fetch media
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Proxy and stream E621 media
+      tags:
+      - e621
+  /api/e621/posts:
+    get:
+      description: Fetches a list of posts from E621 based on provided tags.
+      parameters:
+      - description: Tags to search for
+        in: query
+        name: tags
+        type: string
+      - description: Max results (default 100)
+        in: query
+        name: limit
+        type: integer
+      - description: Page number (default 1)
+        in: query
+        name: page
+        type: integer
+      - description: Shuffle the results
+        in: query
+        name: shuffle
+        type: boolean
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.E621Response'
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - ApiKeyAuth: []
+      summary: Fetch posts from E621
+      tags:
+      - e621
+  /api/e621/query_completion:
+    get:
+      description: Provides tag completion via tags.json. NO CACHE.
+      parameters:
+      - description: Tag prefix to search for
+        in: query
+        name: tags
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.QueryCompletionResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/main.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/main.ErrorResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: E621 Tag Autocomplete
+      tags:
+      - e621
+  /api/e926/media:
+    get:
+      parameters:
+      - description: Encoded E926 media URL
+        in: query
+        name: url
+        required: true
+        type: string
+      responses:
+        "200":
+          description: Streams the media file
+        "400":
+          description: Invalid parameters
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "502":
+          description: Failed to fetch media
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Proxy and stream E926 media
+      tags:
+      - e926
+  /api/e926/posts:
+    get:
+      description: Fetches a list of posts from E926 based on provided tags.
+      parameters:
+      - description: Tags to search for
+        in: query
+        name: tags
+        type: string
+      - description: Max results (default 100)
+        in: query
+        name: limit
+        type: integer
+      - description: Page number (default 1)
+        in: query
+        name: page
+        type: integer
+      - description: Shuffle the results
+        in: query
+        name: shuffle
+        type: boolean
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.E926Response'
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - ApiKeyAuth: []
+      summary: Fetch posts from E926
+      tags:
+      - e926
+  /api/e926/query_completion:
+    get:
+      description: Provides tag completion via tags.json. NO CACHE.
+      parameters:
+      - description: Tag prefix to search for
+        in: query
+        name: tags
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.QueryCompletionResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/main.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/main.ErrorResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: E926 Tag Autocomplete
+      tags:
+      - e926
+  /api/furbooru/media:
+    get:
+      parameters:
+      - description: Encoded Furbooru media URL
+        in: query
+        name: url
+        required: true
+        type: string
+      responses:
+        "200":
+          description: Streams the media file
+        "400":
+          description: Invalid parameters
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "502":
+          description: Failed to fetch media
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Proxy and stream Furbooru media
+      tags:
+      - furbooru
+  /api/furbooru/posts:
+    get:
+      description: Fetches a list of posts from Furbooru based on provided tags.
+      parameters:
+      - description: Tags to search for
+        in: query
+        name: tags
+        type: string
+      - description: Max results (default 100)
+        in: query
+        name: limit
+        type: integer
+      - description: Page number (default 1)
+        in: query
+        name: page
+        type: integer
+      - description: Shuffle the results
+        in: query
+        name: shuffle
+        type: boolean
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.FurbooruResponse'
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - ApiKeyAuth: []
+      summary: Fetch posts from Furbooru
+      tags:
+      - furbooru
+  /api/furbooru/query_completion:
+    get:
+      description: Provides tag completion via native tags search. NO CACHE.
+      parameters:
+      - description: Tag prefix to search for
+        in: query
+        name: tags
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.QueryCompletionResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/main.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/main.ErrorResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Furbooru Tag Autocomplete
+      tags:
+      - furbooru
+  /api/gelbooru/media:
+    get:
+      parameters:
+      - description: Encoded Gelbooru media URL
+        in: query
+        name: url
+        required: true
+        type: string
+      responses:
+        "200":
+          description: Streams the media file
+        "400":
+          description: Invalid parameters
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "502":
+          description: Failed to fetch media
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Proxy and stream Gelbooru media
+      tags:
+      - gelbooru
+  /api/gelbooru/posts:
+    get:
+      parameters:
+      - description: Space-separated tags
+        in: query
+        name: tags
+        type: string
+      - description: Max results (default 100, max 100)
+        in: query
+        name: limit
+        type: integer
+      - description: Page number (default 1)
+        in: query
+        name: page
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.GelbooruResponse'
+        "502":
+          description: Upstream fetch failed
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - ApiKeyAuth: []
+      summary: Get posts from Gelbooru
+      tags:
+      - gelbooru
+  /api/gelbooru/query_completion:
+    get:
+      description: Scrapes autocomplete tags from Gelbooru using wildcard matching.
+        No cache enforcement.
+      parameters:
+      - description: Tag query to autocomplete (e.g. jeanne)
+        in: query
+        name: tags
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.QueryCompletionResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/main.ErrorResponse'
+        "502":
+          description: Bad Gateway
+          schema:
+            $ref: '#/definitions/main.ErrorResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Get tag completion from Gelbooru (Eiyuu logic)
+      tags:
+      - gelbooru
+  /api/graphql:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: GraphQL Query
+        in: body
+        name: query
+        required: true
+        schema:
+          $ref: '#/definitions/handlers.GraphQLRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - ApiKeyAuth: []
+      summary: GraphQL Endpoint
+      tags:
+      - graphql
+  /api/hypnohub/media:
+    get:
+      parameters:
+      - description: Direct media URL to proxy
+        in: query
+        name: url
+        required: true
+        type: string
+      produces:
+      - '*/*'
+      responses:
+        "200":
+          description: Image or Video file
+        "400":
+          description: Missing or invalid URL
+          schema:
+            type: string
+        "500":
+          description: Failed to proxy media
+          schema:
+            type: string
+      summary: Proxy Hypnohub Media
+      tags:
+      - hypnohub
+  /api/hypnohub/posts:
+    get:
+      parameters:
+      - description: Tags to search for
+        in: query
+        name: tags
+        type: string
+      - description: Number of results (default 20, max 100)
+        in: query
+        name: limit
+        type: integer
+      - description: Page number (default 1)
+        in: query
+        name: page
+        type: integer
+      - description: Randomize the order of the results
+        in: query
+        name: shuffle
+        type: boolean
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - ApiKeyAuth: []
+      summary: Fetch Hypnohub Posts
+      tags:
+      - hypnohub
+  /api/hypnohub/query_completion:
+    get:
+      parameters:
+      - description: Tag prefix to search
+        in: query
+        name: tags
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - ApiKeyAuth: []
+      summary: Hypnohub Tag Autocomplete
+      tags:
+      - hypnohub
+  /api/konachan_com/media:
+    get:
+      parameters:
+      - description: Direct media URL to proxy
+        in: query
+        name: url
+        required: true
+        type: string
+      produces:
+      - '*/*'
+      responses:
+        "200":
+          description: Image or Video file
+        "400":
+          description: Missing or invalid URL
+          schema:
+            type: string
+        "500":
+          description: Failed to proxy media
+          schema:
+            type: string
+      summary: Proxy KonachanCom Media
+      tags:
+      - konachan_com
+  /api/konachan_com/posts:
+    get:
+      parameters:
+      - description: Tags to search for
+        in: query
+        name: tags
+        type: string
+      - description: Number of results (default 20, max 100)
+        in: query
+        name: limit
+        type: integer
+      - description: Page number (default 1)
+        in: query
+        name: page
+        type: integer
+      - description: Randomize the order of the results
+        in: query
+        name: shuffle
+        type: boolean
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - ApiKeyAuth: []
+      summary: Fetch KonachanCom Posts
+      tags:
+      - konachan_com
+  /api/konachan_com/query_completion:
+    get:
+      parameters:
+      - description: Tag prefix to search
+        in: query
+        name: tags
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - ApiKeyAuth: []
+      summary: KonachanCom Tag Autocomplete
+      tags:
+      - konachan_com
+  /api/konachan_net/media:
+    get:
+      parameters:
+      - description: Direct media URL to proxy
+        in: query
+        name: url
+        required: true
+        type: string
+      produces:
+      - '*/*'
+      responses:
+        "200":
+          description: Image or Video file
+        "400":
+          description: Missing or invalid URL
+          schema:
+            type: string
+        "500":
+          description: Failed to proxy media
+          schema:
+            type: string
+      summary: Proxy KonachanNet Media
+      tags:
+      - konachan_net
+  /api/konachan_net/posts:
+    get:
+      parameters:
+      - description: Tags to search for
+        in: query
+        name: tags
+        type: string
+      - description: Number of results (default 20, max 100)
+        in: query
+        name: limit
+        type: integer
+      - description: Page number (default 1)
+        in: query
+        name: page
+        type: integer
+      - description: Randomize the order of the results
+        in: query
+        name: shuffle
+        type: boolean
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - ApiKeyAuth: []
+      summary: Fetch KonachanNet Posts
+      tags:
+      - konachan_net
+  /api/konachan_net/query_completion:
+    get:
+      parameters:
+      - description: Tag prefix to search
+        in: query
+        name: tags
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - ApiKeyAuth: []
+      summary: KonachanNet Tag Autocomplete
+      tags:
+      - konachan_net
+  /api/realbooru/media:
+    get:
+      description: Proxies a media URL through the server, attaching required referer
+        headers.
+      parameters:
+      - description: URL of the media to proxy
+        in: query
+        name: url
+        required: true
+        type: string
+      produces:
+      - application/octet-stream
+      responses:
+        "200":
+          description: Media content
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Proxy media to bypass Realbooru hotlink protection
+      tags:
+      - realbooru
+  /api/realbooru/posts:
+    get:
+      description: Fetches a list of posts from Realbooru using the provided tags,
+        limit, and page.
+      parameters:
+      - description: Space-separated list of tags to search for
+        in: query
+        name: tags
+        type: string
+      - description: Number of posts to return (default is configured limit)
+        in: query
+        name: limit
+        type: integer
+      - description: Page number (1-indexed, default is 1)
+        in: query
+        name: page
+        type: integer
+      - description: Shuffle the posts randomly
+        in: query
+        name: shuffle
+        type: boolean
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - ApiKeyAuth: []
+      summary: Fetch posts from Realbooru
+      tags:
+      - realbooru
+  /api/realbooru/query_completion:
+    get:
+      description: Fetches tag autocomplete suggestions from Realbooru based on the
+        query. NO CACHE.
+      parameters:
+      - description: Tag query to autocomplete
+        in: query
+        name: tags
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - ApiKeyAuth: []
+      summary: Fetch tag autocompletions from Realbooru
+      tags:
+      - realbooru
+  /api/rule34/media:
+    get:
+      parameters:
+      - description: Encoded Rule34 media URL
+        in: query
+        name: url
+        required: true
+        type: string
+      responses:
+        "200":
+          description: Streams the media file
+        "400":
+          description: Invalid parameters
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "502":
+          description: Failed to fetch media
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Proxy and stream Rule34 media
+      tags:
+      - rule34
+  /api/rule34/posts:
+    get:
+      parameters:
+      - description: Space-separated tags
+        in: query
+        name: tags
+        type: string
+      - description: Max results (default 20, max 100)
+        in: query
+        name: limit
+        type: integer
+      - description: Page number (default 1)
+        in: query
+        name: page
+        type: integer
+      - description: Shuffle the results
+        in: query
+        name: shuffle
+        type: boolean
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.Rule34Response'
+        "502":
+          description: Upstream fetch failed
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - ApiKeyAuth: []
+      summary: Get posts from Rule34
+      tags:
+      - rule34
+  /api/rule34/query_completion:
+    get:
+      description: Scrapes autocomplete tags from Rule34 using wildcard matching.
+      parameters:
+      - description: Tag query to autocomplete (e.g. jeanne)
+        in: query
+        name: tags
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.QueryCompletionResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/main.ErrorResponse'
+        "502":
+          description: Bad Gateway
+          schema:
+            $ref: '#/definitions/main.ErrorResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Get tag completion from Rule34 (Eiyuu logic)
+      tags:
+      - rule34
+  /api/safebooru/media:
+    get:
+      parameters:
+      - description: Direct media URL to proxy
+        in: query
+        name: url
+        required: true
+        type: string
+      produces:
+      - '*/*'
+      responses:
+        "200":
+          description: Image or Video file
+        "400":
+          description: Missing or invalid URL
+          schema:
+            type: string
+        "500":
+          description: Failed to proxy media
+          schema:
+            type: string
+      summary: Proxy Safebooru Media
+      tags:
+      - safebooru
+  /api/safebooru/posts:
+    get:
+      parameters:
+      - description: Tags to search for
+        in: query
+        name: tags
+        type: string
+      - description: Number of results (default 20, max 100)
+        in: query
+        name: limit
+        type: integer
+      - description: Page number (default 1)
+        in: query
+        name: page
+        type: integer
+      - description: Randomize the order of the results
+        in: query
+        name: shuffle
+        type: boolean
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - ApiKeyAuth: []
+      summary: Fetch Safebooru Posts
+      tags:
+      - safebooru
+  /api/safebooru/query_completion:
+    get:
+      parameters:
+      - description: Tag prefix to search
+        in: query
+        name: tags
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - ApiKeyAuth: []
+      summary: Safebooru Tag Autocomplete
+      tags:
+      - safebooru
+  /api/tbib/media:
+    get:
+      parameters:
+      - description: Encoded TBIB media URL
+        in: query
+        name: url
+        required: true
+        type: string
+      responses:
+        "200":
+          description: Streams the media file
+        "400":
+          description: Invalid parameters
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "502":
+          description: Failed to fetch media
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Proxy and stream TBIB media
+      tags:
+      - tbib
+  /api/tbib/posts:
+    get:
+      parameters:
+      - description: Space-separated tags
+        in: query
+        name: tags
+        type: string
+      - description: Max results (default 20, max 100)
+        in: query
+        name: limit
+        type: integer
+      - description: Page number (default 1)
+        in: query
+        name: page
+        type: integer
+      - description: Shuffle the results
+        in: query
+        name: shuffle
+        type: boolean
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.TbibResponse'
+        "502":
+          description: Upstream fetch failed
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - ApiKeyAuth: []
+      summary: Get posts from TBIB
+      tags:
+      - tbib
+  /api/tbib/query_completion:
+    get:
+      description: Scrapes autocomplete tags from TBIB using wildcard matching.
+      parameters:
+      - description: Tag query to autocomplete (e.g. yuri)
+        in: query
+        name: tags
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.QueryCompletionResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/main.ErrorResponse'
+        "502":
+          description: Bad Gateway
+          schema:
+            $ref: '#/definitions/main.ErrorResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Get tag completion from TBIB (Eiyuu logic)
+      tags:
+      - tbib
+  /api/xbooru/media:
+    get:
+      parameters:
+      - description: Direct media URL to proxy
+        in: query
+        name: url
+        required: true
+        type: string
+      produces:
+      - '*/*'
+      responses:
+        "200":
+          description: Image or Video file
+        "400":
+          description: Missing or invalid URL
+          schema:
+            type: string
+        "500":
+          description: Failed to proxy media
+          schema:
+            type: string
+      summary: Proxy Xbooru Media
+      tags:
+      - xbooru
+  /api/xbooru/posts:
+    get:
+      parameters:
+      - description: Tags to search for
+        in: query
+        name: tags
+        type: string
+      - description: Number of results (default 20, max 100)
+        in: query
+        name: limit
+        type: integer
+      - description: Page number (default 1)
+        in: query
+        name: page
+        type: integer
+      - description: Randomize the order of the results
+        in: query
+        name: shuffle
+        type: boolean
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - ApiKeyAuth: []
+      summary: Fetch Xbooru Posts
+      tags:
+      - xbooru
+  /api/xbooru/query_completion:
+    get:
+      parameters:
+      - description: Tag prefix to search
+        in: query
+        name: tags
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - ApiKeyAuth: []
+      summary: Xbooru Tag Autocomplete
+      tags:
+      - xbooru
+  /api/yandere/media:
+    get:
+      parameters:
+      - description: Direct media URL to proxy
+        in: query
+        name: url
+        required: true
+        type: string
+      produces:
+      - '*/*'
+      responses:
+        "200":
+          description: Image or Video file
+        "400":
+          description: Missing or invalid URL
+          schema:
+            type: string
+        "500":
+          description: Failed to proxy media
+          schema:
+            type: string
+      summary: Proxy Yandere Media
+      tags:
+      - yandere
+  /api/yandere/posts:
+    get:
+      parameters:
+      - description: Tags to search for
+        in: query
+        name: tags
+        type: string
+      - description: Number of results (default 20, max 100)
+        in: query
+        name: limit
+        type: integer
+      - description: Page number (default 1)
+        in: query
+        name: page
+        type: integer
+      - description: Randomize the order of the results
+        in: query
+        name: shuffle
+        type: boolean
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - ApiKeyAuth: []
+      summary: Fetch Yandere Posts
+      tags:
+      - yandere
+  /api/yandere/query_completion:
+    get:
+      parameters:
+      - description: Tag prefix to search
+        in: query
+        name: tags
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - ApiKeyAuth: []
+      summary: Yandere Tag Autocomplete
+      tags:
+      - yandere
+  /graphql:
+    get:
+      produces:
+      - text/html
+      responses:
+        "200":
+          description: GraphiQL HTML page
+          schema:
+            type: string
+      summary: GraphiQL Playground
+      tags:
+      - graphql
+  /ping:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Server is running
+          schema:
+            $ref: '#/definitions/handlers.PingResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Ping the server
+      tags:
+      - system
+securityDefinitions:
+  ApiKeyAuth:
+    description: 'Provide the API key via the `api_key` query parameter or `Authorization:
+      Bearer <key>` header.'
+    in: query
+    name: api_key
+    type: apiKey
+swagger: "2.0"
+tags:
+- name: graphql
+- name: danbooru
+- name: gelbooru
+- name: rule34
+- name: tbib
+- name: xbooru
+- name: hypnohub
+- name: safebooru
+- name: yandere
+- name: konachan_com
+- name: konachan_net
+- name: e621
+- name: e926
+- name: furbooru
+- name: derpibooru
+- name: realbooru
+- name: system
