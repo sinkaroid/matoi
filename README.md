@@ -39,10 +39,9 @@
   - [Prometheus metrics](#prometheus-metrics)
   - [Rate limiting](#rate-limiting)
   - [FlareSolverr](#flaresolverr)
-  - [Development](#development)
   - [Pronunciation](#pronunciation)
-  - [Microservices](#microservices)
   - [Legal](#legal)
+  - [Microservices](#microservices)
 
 ## The problem
 
@@ -463,6 +462,13 @@ Handler annotations follow standard `swag` format and regenerate after any handl
 
 [`ja_JP`](https://www.localeplanet.com/java/ja-JP/index.html) • **/ma·to·i/** — **纏** (_matoi_) **"to gather"**, **"to collect"**, or **"to bring together into one"**. The logo and header is inspired by Senketsu (Scissor Blade) & Ryūko Matoi from Kill la Kill.
 
+## Legal
+
+This tool can be freely copied, modified, altered, distributed without any attribution whatsoever. However, if you feel
+like this tool deserves an attribution, mention it. It won't hurt anybody.
+
+> Licence: WTF.
+
 ## Microservices
 
 Microservices and subprojects is part of a broader ecosystem of specialized services, each focused on a specific platform or content source while sharing a common design philosophy maintained by [ScathachGrip](https://github.com/ScathachGrip)
@@ -473,10 +479,3 @@ Microservices and subprojects is part of a broader ecosystem of specialized serv
 - [sinkaroid/lustpress](https://github.com/sinkaroid/lustpress) — Unified REST and GraphQL API for PornHub and other R18 platforms
 
 Each service is developed independently, enabling modular deployments, isolated maintenance, and platform-specific optimizations while remaining interoperable within the ecosystem.
-
-## Legal
-
-This tool can be freely copied, modified, altered, distributed without any attribution whatsoever. However, if you feel
-like this tool deserves an attribution, mention it. It won't hurt anybody.
-
-> Licence: WTF.
